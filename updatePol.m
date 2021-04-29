@@ -22,8 +22,7 @@ function contam = updatePol(contam,obstacles,sources,iter, time)
             contam(sources(j, 1), sources(j, 2)) = contam(sources(j, 1), sources(j, 2)) + 1.0;
             %[sources(j, 1), sources(j, 2)]
         end
-        sum(sum(contam))
-        
+                
         %conv
         contam = conv2(contam, carr, 'same');
         

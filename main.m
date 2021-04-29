@@ -41,8 +41,8 @@ scatter(dis_lin, c1_lin);
 xlabel('distance from source (px)');
 ylabel('contamination');
 
-yfit = 0:0.00005:0.012;
-xfit = -28*log(yfit/0.014);
+yfit = 0:0.001:1;
+xfit = 62*((-1*log(yfit)).^(11/16));
 hold on;
 plot(xfit, yfit);
 
