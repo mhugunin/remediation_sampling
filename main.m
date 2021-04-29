@@ -21,9 +21,11 @@ maxTime = 5;
 for i=1:maxTime
     contam = updatePol(contam,obstacles,sources, iter, i);
     figure(2);
-    imagesc(contam');
-    pause(1);
+    imagesc(contam' / max(max(contam)));
+    pause(0.1);
 end
+
+contam = contam / max(max(contam));
 
 %plot dist
 figure()
