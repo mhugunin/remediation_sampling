@@ -3,7 +3,7 @@ robotstart = [10 10];
 
 % randomize source location(s)?
 % make number of sources a parameter?
-sources = [100, 100];
+sources = [300, 50];
 obstacles = (imread('map1.png')==0);
 obstacles = obstacles(:, :, 1);
 
@@ -17,7 +17,7 @@ imagesc(obstacles'); axis square; colorbar; colormap jet; hold on;
 
 contam = zeros(size(obstacles));
 
-maxTime = 5;
+maxTime = 3;
 for i=1:maxTime
     contam = updatePol(contam,obstacles,sources, iter, i);
     figure(2);
@@ -29,20 +29,22 @@ contam = contam / max(max(contam));
 
 %plot dist
 figure()
-c1 = contam(1:200, 1:200);
-[x, y] = meshgrid(1:200, 1:200);
-x = (x-100).^2;
-y = (y-100).^2;
+x_range = max(sources(1,1)-99, 1):min(sources(1,1)+100, size(contam, 1));
+y_range = max(sources(1,2)-99, 1):min(sources(1,2)+100, size(contam, 2));
+c1 = contam(x_range, y_range);
+[x, y] = meshgrid(x_range, y_range);
+x = (x-sources(1,1)).^2;
+y = (y-sources(1,2)).^2;
 dis = sqrt(x+y);
 
-c1_lin = reshape(c1, [200*200, 1]);
-dis_lin = reshape(dis, [200*200, 1]);
+c1_lin = reshape(c1, [length(x_range)*length(y_range), 1]);
+dis_lin = reshape(dis', [length(x_range)*length(y_range), 1]);
 scatter(dis_lin, c1_lin);
 xlabel('distance from source (px)');
 ylabel('contamination');
 
 yfit = 0:0.001:1;
-xfit = 62*((-1*log(yfit)).^(11/16));
+xfit = 65*((-1*log(yfit)).^(2/3));
 hold on;
 plot(xfit, yfit);
 
