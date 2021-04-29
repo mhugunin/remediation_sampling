@@ -14,10 +14,29 @@ imagesc(obstacles'); axis square; colorbar; colormap jet; hold on;
 
 contam = zeros(size(obstacles));
 
-maxTime = 500;
+maxTime = 5;
 for i=1:maxTime
     contam = updatePol(contam,obstacles,sources, iter);
     figure(2);
     imagesc(contam');
     pause(0.1);
 end
+
+%plot dist
+c1 = contam(1:200, 1:200);
+[x, y] = meshgrid(1:200, 1:200);
+x = (x-100).^2;
+y = (y-100).^2;
+dis = sqrt(x+y);
+
+c1_lin = reshape(c1, [200*200, 1]);
+dis_lin = reshape(dis, [200*200, 1]);
+scatter(dis_lin, c1_lin);
+xlabel('distance from source (px)');
+ylabel('contamination');
+
+yfit = 0:0.00005:0.012;
+%xfit = -28*log(yfit/0.014);
+hold on;
+plot(xfit, yfit);
+
