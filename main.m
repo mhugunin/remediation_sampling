@@ -1,6 +1,9 @@
 clear all; close all; clc;
 robotstart = [10 10];
-sources = [350, 340; 150, 350; 100, 100];
+
+% randomize source location(s)?
+% make number of sources a parameter?
+sources = [100, 100];
 obstacles = (imread('map1.png')==0);
 obstacles = obstacles(:, :, 1);
 
@@ -16,13 +19,14 @@ contam = zeros(size(obstacles));
 
 maxTime = 5;
 for i=1:maxTime
-    contam = updatePol(contam,obstacles,sources, iter);
+    contam = updatePol(contam,obstacles,sources, iter, i);
     figure(2);
     imagesc(contam');
-    pause(0.1);
+    pause(1);
 end
 
 %plot dist
+figure()
 c1 = contam(1:200, 1:200);
 [x, y] = meshgrid(1:200, 1:200);
 x = (x-100).^2;
@@ -36,7 +40,7 @@ xlabel('distance from source (px)');
 ylabel('contamination');
 
 yfit = 0:0.00005:0.012;
-%xfit = -28*log(yfit/0.014);
+xfit = -28*log(yfit/0.014);
 hold on;
 plot(xfit, yfit);
 
