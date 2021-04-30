@@ -1,4 +1,4 @@
-function[newrobotpos] = robotplanner(envmap, obsmap, robotpos)
+function[localplan] = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos)
 
 MEX = 1;
 
@@ -11,7 +11,7 @@ newrobotpos = robotpos;
 
 if (MEX == 1)
 	%if using MEX, here you would call the planner
-	planner(envmap, obsmap, robotpos);
+	localplan = planner(envmap, obsmap, exploredmap, goalmap, robotpos);
 
 else
 	%otherwise do planning right here 

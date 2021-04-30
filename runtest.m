@@ -23,6 +23,8 @@ rgbImage(:,:,:) = rgbImage(:,:,:) .* ~obsmap(:,:)';
 imshow(rgbImage);
 hold on;
 
+exploredmap = zeros(size(envmap));
+goalmap = ones(size(envmap)) / (size(envmap, 1) * size(envmap, 2));
 %current positions of the target and robot
 robotpos = robotstart;
 
@@ -45,8 +47,9 @@ for i = 1:2000
     
     %call robot planner to find what they want to do
     tStart = tic;
-    envmap(1,1) = 2;
-    newrobotpos = robotplanner(envmap, obsmap, robotpos);
+    
+    % want our planner to return entire path to next frontier location
+    localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
     %compute movetime for the target
     tElapsed = toc(tStart);
     timeTaken = tElapsed*1000; % in ms

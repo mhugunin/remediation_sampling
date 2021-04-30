@@ -11,9 +11,11 @@
 #include "mex.h"
 
 /* Input Arguments */
-#define	ENVMAP_IN   prhs[0]
-#define	OBSMAP_IN   prhs[1]
-#define ROBOT_IN    prhs[2]
+#define	ENVMAP_IN       prhs[0]
+#define	OBSMAP_IN       prhs[1]
+#define	EXPLROEDMAP_IN  prhs[2]
+#define GOALMAP_IN      prhs[3]
+#define ROBOT_IN        prhs[4]
 
 //access to the map is shifted to account for 0-based indexing in the map, whereas
 //1-based indexing in matlab (so, robotpose and goalpose are 1-indexed)
@@ -192,19 +194,21 @@ void mexFunction( int nlhs, mxArray *plhs[],
 { 
     
     /* Check for proper number of arguments */    
-    if (nrhs != 3) { 
+    if (nrhs != 5) { 
 	    mexErrMsgIdAndTxt( "MATLAB:planner:invalidNumInputs",
-                "Three input arguments required."); 
-    }// } else if (nlhs != 1) {
-	//     mexErrMsgIdAndTxt( "MATLAB:planner:maxlhs",
-    //             "One output argument required."); 
-    // } 
+                "Five input arguments required."); 
+    } else if (nlhs != 1) {
+	    mexErrMsgIdAndTxt( "MATLAB:planner:maxlhs",
+                "One output argument required."); 
+    } 
         
     /* get the dimensions of the map and the map matrix itself*/     
     int x_size = mxGetM(ENVMAP_IN);
     int y_size = mxGetN(ENVMAP_IN);
     double* envmap = mxGetPr(ENVMAP_IN);
     double* obsmap = mxGetPr(OBSMAP_IN);
+    double* exploredmap = mxGetPr(EXPLOREDMAP_IN);
+    double* goalmap = mxGetPr(GOALMAP_IN);
     
     /* get the dimensions of the robotpose and the robotpose itself*/     
     int robotpose_M = mxGetM(ROBOT_IN);
@@ -217,12 +221,20 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int robotposeX = (int)robotposeV[0];
     int robotposeY = (int)robotposeV[1];
         
-    // /* Create a matrix for the return action */ 
-    // ACTION_OUT = mxCreateNumericMatrix( (mwSize)1, (mwSize)2, mxINT8_CLASS, mxREAL); 
-    // char* action_ptr = (char*)  mxGetPr(ACTION_OUT);
+    /* Create a matrix for the return action */ 
+
+    plan_len = 0;
             
     /* Do the actual planning in a subroutine */
-    planner(envmap, obsmap, x_size, y_size, robotposeX, robotposeY); 
+    planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);
+
+    // planner needs to return / set a vector or something for actual plan
+
+    // set the output to returned plan
+    plhs[0] = mxCreateNumericMatrix( (mwSize)2, (mwSize)plan_len, mxINT32_CLASS, mxREAL); 
+    int* action_ptr = (int*)  mxGetPr(plhs[0]);
+
+    // loop through and assign to action_ptr for each location in plan
     return;
     
 }
