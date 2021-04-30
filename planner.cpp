@@ -106,16 +106,15 @@ pair<int, int> getNextStep(node_t curr){
 
 
 static void planner(
-		   double* contaminationMap,
-           int* obstacleMap,
-		   int x_size, //size of obstacle/contamination Map
- 		   int y_size,
-           int robotposeX,
+            double* contaminationMap,
+            int* obstacleMap,
+            int* exploredMap,
+            double* goalMap,
+            int x_size, //size of obstacle/contamination Map
+            int y_size,
+            int robotposeX,
             int robotposeY,
-            int goalposeX,
-            int goalposeY,
-            char *p_actionX,
-            char *p_actionY
+            int* plan_len
 		   )
 {
        //8-connected grid
@@ -206,8 +205,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int x_size = mxGetM(ENVMAP_IN);
     int y_size = mxGetN(ENVMAP_IN);
     double* envmap = mxGetPr(ENVMAP_IN);
-    double* obsmap = mxGetPr(OBSMAP_IN);
-    double* exploredmap = mxGetPr(EXPLOREDMAP_IN);
+    int* obsmap = mxGetPr(OBSMAP_IN);
+    int* exploredmap = mxGetPr(EXPLOREDMAP_IN);
     double* goalmap = mxGetPr(GOALMAP_IN);
     
     /* get the dimensions of the robotpose and the robotpose itself*/     
@@ -223,7 +222,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
         
     /* Create a matrix for the return action */ 
 
-    plan_len = 0;
+    int plan_len = 0;
             
     /* Do the actual planning in a subroutine */
     planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);
