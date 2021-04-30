@@ -1,25 +1,20 @@
 function[numofmoves, caught] = runtest(robotstart, targetstart, mapfile)
 
-close all;
-
 if exist('mapfile', 'var')
     map_struct = load(mapfile);
     envmap = map_struct.contam;
     obsmap = map_struct.obstacles;
 else 
-    [envmap, obsmap] = generate_map(0, 0);
+    [envmap, obsmap] = generate_map(0, 1);
 end
+
+close all;
 
 %draw the environment
 figure('units','normalized','outerposition',[0 0 1 1]);
-% imagesc(envmap'); axis square; colorbar; colormap jet; hold on;
-% imagesc(obsmap'); axis square; colorbar; colormap jet;
+subplot(1,2,1)
+imagesc(envmap'); axis square; colorbar; colormap jet; hold on;
 
-% show obstacles and contamination on same image
-imInd = gray2ind(envmap', 256);
-rgbImage = ind2rgb(imInd, jet(256));
-rgbImage(:,:,:) = rgbImage(:,:,:) .* ~obsmap(:,:)';
-imshow(rgbImage);
 
 %current positions of the target and robot
 robotpos = robotstart;
