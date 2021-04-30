@@ -11,8 +11,7 @@ newrobotpos = robotpos;
 
 if (MEX == 1)
 	%if using MEX, here you would call the planner
-	action = planner(envmap, obsmap, robotpos);
-	newrobotpos = robotpos+cast(action,'like',robotpos);
+	planner(envmap, obsmap, robotpos);
 
 else
 	%otherwise do planning right here 

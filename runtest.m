@@ -45,6 +45,7 @@ for i = 1:2000
     
     %call robot planner to find what they want to do
     tStart = tic;
+    envmap(1,1) = 2;
     newrobotpos = robotplanner(envmap, obsmap, robotpos);
     %compute movetime for the target
     tElapsed = toc(tStart);
