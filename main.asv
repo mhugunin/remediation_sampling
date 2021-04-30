@@ -3,7 +3,7 @@ robotstart = [10 10];
 
 % randomize source location(s)?
 % make number of sources a parameter?
-sources = [300, 50];
+sources = [300, 260];
 obstacles = (imread('map1.png')==0);
 obstacles = obstacles(:, :, 1);
 
@@ -44,7 +44,7 @@ xlabel('distance from source (px)');
 ylabel('contamination');
 
 yfit = 0:0.001:1;
-xfit = 65*((-1*log(yfit)).^(2/3));
+xfit = 40*((-1*log(yfit)).^(3/3));
 hold on;
 plot(xfit, yfit);
 
