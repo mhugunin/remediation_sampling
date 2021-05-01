@@ -8,7 +8,11 @@
 #include <vector>
 #include <algorithm>
 #include <time.h>
-#include "mex.h"
+#include <unordered_set>
+#include <memory>
+
+using namespace std;
+// #include "mex.h"
 
 /* Input Arguments */
 #define	ENVMAP_IN       prhs[0]
@@ -32,6 +36,7 @@
 #define NUMOFDIRS 8
 
 int temp = 0;
+vector <pair<int, int>> frontier; //@TODO: how do we update this?
 
 //3 functions to go between a unique node id <-> x/y on map
 int xcord(int counter, int y_size){
@@ -44,17 +49,6 @@ int xy2count(int x, int y, int y_size){
     return x*y_size + y;
 }
 
-//Define heuristic by euclidean dist/sqrt(2) (accounts for diagonal weight 1)
-int heuristic(int dx, int dy){
-    return (int)(sqrt(((dx)*(dx) + (dy)*(dy)))/1.414);
-}
-
-struct Compare{ //Operator for priority of queue by minimum f=h+g
-    bool operator()(std::vector<int> a, std::vector<int> b){
-        return (a[0])>(b[0]);
-    }
-};
-
 bool willCollide(int x, int y, int* obstacleMap, int x_size, int y_size){
     return (int)obstacleMap[GETMAPINDEX(x, y, x_size, y_size)];
 }
@@ -65,54 +59,75 @@ double sample(int x, int y, double* contaminationMap, int x_size, int y_size){
 
 class State {
 public:
-    State(int rpX, int rpY, double* probability, double* exploredSoFar, shared_ptr<Node> p){
+    State(int rpX, int rpY, shared_ptr<State> p, int id){
         robotposeX = rpX;
         robotposeY = rpY;
-        this->probability = probability;
-        this->exploredSoFar = exploredSoFar;
         this->parent = p;
+        this->id = id;
     }
-    double* probability;
-    double* exploredSoFar;
-    
     float g = 0;
     float h = 0;
     float f = g + h;
     int robotposeX;
     int robotposeY;
-    shared_ptr<Node> parent;
-};
-class Compare{
-    public:
-      bool operator()(shared_ptr<State> n1,shared_ptr<State> n2){
-            return n1->f > n2->f;
-        }  
+    int id;
+    shared_ptr<State> parent;
 };
 
 typedef shared_ptr<State> state_t;
 
-pair<int, int> getNextStep(node_t curr){
-    node_t c = curr;
-    int xd=0;
-    while(c->parent->parent != nullptr) {
-        c = c->parent;
-        xd++;
+class Compare{
+    public:
+      bool operator()(state_t n1, state_t n2) const {
+            return n1->f > n2->f;
+        }  
+};
+
+class Eq{
+public:
+    bool operator()(state_t n1, state_t n2) const{
+        bool eq = (n1->robotposeX == n2->robotposeX && n1->robotposeY == n2->robotposeY);
+        return eq;
     }
-    int nextX = c->robotposeX;
-    int nextY = c->robotposeY;
-    pair<int, int> n = make_pair(nextX, nextY);
-    return n;
+};
+
+class Hash{
+public:
+    size_t operator()(const state_t &n) const {
+        return std::hash<int>{}(n->id);
+    }
+};
+
+
+vector<pair<int, int>> getPath(state_t curr, int* planLen){
+    vector<pair<int, int>> path;
+    state_t c = curr;
+    pair<int, int> g = make_pair(curr->robotposeX, curr->robotposeY);
+    path.push_back(g);
+    int length = 0;
+    while(c->parent != nullptr) {
+        c = c->parent;
+        pair<int, int> next = make_pair(c->robotposeX, c->robotposeY);
+        path.push_back(next);
+        length++;
+    }
+    *planLen = length;
+    return path;
 }
 
+double euclideanDist(int x1, int y1, int x2, int y2){
+    return sqrt(pow(x1-x2,2) + (pow(y1-y2,2)));
+}
 
-static void planner(
+// multigoal backwards A*
+static vector<pair<int, int>> planner(
             double* contaminationMap,
             int* obstacleMap,
             int* exploredMap,
-            double* goalMap,
+            double* goalMap, //liklihood distribution
             int x_size, //size of obstacle/contamination Map
             int y_size,
-            int robotposeX,
+            int robotposeX, //robot's current position = goal in backwards A*
             int robotposeY,
             int* plan_len
 		   )
@@ -128,57 +143,83 @@ static void planner(
 //     printf("goal: %d %d;", goalposeX, goalposeY);
 
     //A* planner
-    priority_queue<node_t,vector<node_t>, Compare>open;
-    vector<vector<char>> closed(y_size+1, vector<char> (x_size+1, 0));
-    
-    node_t start_shared = make_shared<Node>(robotposeX, robotposeY, nullptr);
-    open.push(start_shared);
+    priority_queue<state_t,vector<state_t>, Compare>open;
+    unordered_set<state_t, Hash, Eq> closed;
+
+    // find x,y of most likely contamination source from goalMap
+    vector<int>::iterator maxElement;
+    maxElement = max_element(goalMap.begin(), goalMap.end());
+    int dist = distance(goalMap.begin(), maxElement);
+    int sink_x = dist % x_size; //col
+    int sink_y = dist / y_size; //row
+
+    state_t sink = make_shared<State>(sink_x, sink_y, nullptr, 0); //sink node = most likely point on map to be contamination source
+
+    int nextId = 1;
+    vector<state_t> goals(frontier.size()); // vector of possible goals
+
+    for(auto i: frontier){
+        state_t n = make_shared<State>(i.first, i.second, sink, nextId);
+        n->g =  euclideanDist(i.first, i.second, sink_x, sink_y);//euclidean distance to the most likely contamination source
+        n->h = euclideanDist(robotposeX, robotposeY, i.first, i.second); // euclidean distance from node to robot's current position
+        n->f = n->g + n->h;
+        nextId ++;
+    }
+
+    open.push(sink);
     
     while(!open.empty()){
         // get current node
-        node_t current_node = open.top();
+        state_t current_node = open.top();
         open.pop();
-        // add to closed list
-        if(closed[current_node->robotposeY][current_node->robotposeX] == 1){
+        // add to closed set
+        auto iterator = closed.find(current_node);
+        if(iterator != closed.end()){
             continue;
         }
-        else{
-            closed[current_node->robotposeY][current_node->robotposeX] = 1;
+        else {
+            closed.insert(current_node);
         }
-        // check if = target
-        if (current_node->robotposeX == goalposeX && current_node->robotposeY == goalposeY) {
-            auto res = getNextStep(current_node);
-            *p_actionX = res.first - start_shared->robotposeX; 
-            *p_actionY = res.second - start_shared->robotposeY;
-            return;
+    
+        // check if current node = start node = robot current position
+        if (current_node->robotposeX == robotposeX && current_node->robotposeY == robotposeY) {
+            vector<pair<int, int>> path = getPath(current_node, plan_len);
+            return path;
         }
-        // for every direction, generate children
-        for (int dir = 0; dir < NUMOFDIRS; dir++)
-        {   
-            int newx = current_node->robotposeX + dX[dir];
-            int newy = current_node->robotposeY + dY[dir];
-           // check validity/within range
-            if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size){
-                if (!willCollide(newx, newy, obstacleMap, x_size, y_size)){ //if free
-                    // create new nodes
-                    node_t child_shared = make_shared<Node>(newx, newy, current_node);
-                    // check if children are in closed list
-                    if(closed[newy][newx] != 1){ // children not in closed list
-                         // else: set g,h,f
-                        child_shared->g = (current_node -> g) + hypot((float)dX[dir],(float)dY[dir]);
-                        //Euclidean distance
-                        child_shared->h = sqrt(pow(child_shared->robotposeX - goalposeX,2) + (pow(child_shared->robotposeY - goalposeY,2)));
-                        //(max(child_shared->robotposeX - goalposeX, child_shared->robotposeY - goalposeY) - min(child_shared->robotposeX - goalposeX, child_shared->robotposeY - goalposeY)+min(child_shared->robotposeX - goalposeX, child_shared->robotposeY - goalposeY)*sqrt(2.0));
-                        child_shared->f = child_shared->g + child_shared->h;
-                        // add to open list
-                        open.push(child_shared);
-                    } 
+        if(current_node == sink){
+            // generate successors for sink only
+            for(state_t g: goals){
+                open.push(g);
+            }
+        } else {
+            // for every direction, generate children
+            for (int dir = 0; dir < NUMOFDIRS; dir++)
+            {   
+                int newx = current_node->robotposeX + dX[dir];
+                int newy = current_node->robotposeY + dY[dir];
+               // check validity/within range
+                if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size){
+                    if (!willCollide(newx, newy, obstacleMap, x_size, y_size)) { //if free
+                        // create new nodes
+                        state_t child_shared = make_shared<State>(newx, newy, current_node, nextId);
+                        // check if children are in closed list
+                        auto iterator = closed.find(child_shared);
+                        if(iterator == closed.end()){ // children not in closed list
+                             // else: set g,h,f
+                            child_shared->g = (current_node -> g) + hypot((float)dX[dir],(float)dY[dir]);
+                            //Euclidean distance
+                            child_shared->h = euclideanDist(newx, newy, robotposeX, robotposeY);
+                            //(max(child_shared->robotposeX - goalposeX, child_shared->robotposeY - goalposeY) - min(child_shared->robotposeX - goalposeX, child_shared->robotposeY - goalposeY)+min(child_shared->robotposeX - goalposeX, child_shared->robotposeY - goalposeY)*sqrt(2.0));
+                            child_shared->f = child_shared->g + child_shared->h;
+                            // add to open list
+                            open.push(child_shared);
+                            nextId++;
+                        } 
+                    }
                 }
             }
         }
     }
-   
-    return;
 }
 
 //prhs contains input parameters (3): 
