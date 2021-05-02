@@ -6,6 +6,7 @@ if exist('mapfile', 'var')
     map_struct = load(mapfile);
     envmap = map_struct.contam;
     obsmap = map_struct.obstacles;
+    sources = map_struct.sources;
 else
     %TODO: should we specify target location?
     [envmap, obsmap, sources] = generate_map(0, 0);
@@ -24,6 +25,8 @@ imshow(rgbImage);
 hold on;
 
 exploredmap = zeros(size(envmap));
+exploredmap(robotstart(1), robotstart(2)) = 1;
+
 goalmap = ones(size(envmap)) / (size(envmap, 1) * size(envmap, 2));
 %current positions of the target and robot
 robotpos = robotstart;
@@ -32,25 +35,31 @@ robotpos = robotstart;
 hr = -1;
 numofmoves = 0;
 caught = 0;
-c0 = clock();
+%c0 = clock();
+
+%meshgrid for distance calcs
+[x, y] = meshgrid(1:size(envmap, 1), 1:size(envmap, 2));
 
 for i = 1:2000
     %draw the positions
     if (hr ~= -1)
         delete(hr);
     end
+    figure(1);
     hr = text(robotpos(1), robotpos(2), 'R', 'Color', 'g', 'FontWeight', 'bold');
-    hr = scatter(robotpos(1), robotpos(2), 10, 'g', 'filled');
-
-    pause(0.1);
-    %pause();
+    hr0 = scatter(robotpos(1), robotpos(2), 10, 'g', 'filled');
+    
+    figure(2);
+    imshow(exploredmap.*~obsmap + 0.5*(~exploredmap));
+    
+    figure(3);
+    imshow(goalmap/max(max(goalmap)));
     
     %call robot planner to find what they want to do
     %tStart = tic;
-    
     % want our planner to return entire path to next frontier location
     %localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
-    localplan = [10 11; 10 12; 10 13]; %TEMP STAND-IN
+    localplan = [robotpos(1)-1 robotpos(2)-1; robotpos(1)-2, robotpos(2)-2]; %TEMP STAND-IN
     
     %compute movetime for the target
     %tElapsed = toc(tStart);
@@ -74,10 +83,26 @@ for i = 1:2000
 
         %make the moves
         robotpos = newrobotpos;
+        exploredmap(robotpos(1), robotpos(2)) = 1;
         numofmoves = numofmoves + 1;
         
         pause(0.1);
     end
+    
+    %Update contamination map
+    contam_reading = envmap(robotpos(1), robotpos(2));
+    exp_dist = 35*((-1*log(contam_reading)).^(3/4));
+    
+    dis = sqrt((x-robotpos(1)).^2+(y-robotpos(2)).^2);
+    c = 5+10*(1-contam_reading);
+    
+    p_gau = 1+(contam_reading*(exp(-1*(dis-exp_dist).^2/(2*c^2))-1));
+    figure(4);
+    imshow(p_gau);
+    pause(0.1);
+    
+    goalmap = goalmap.*p_gau;
+    goalmap = goalmap ./ sum(sum(goalmap)); %normalize probs to sum of 1
     
     %TODO: Implement stopping condition -> should be signaled by the
     %planner when it thinks it found the source

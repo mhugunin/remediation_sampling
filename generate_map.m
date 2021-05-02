@@ -35,7 +35,7 @@ end
 contam = contam / max(max(contam));
 
 if save_maps
-    save('map', 'contam', 'obstacles');
+    save('map', 'contam', 'obstacles', 'sources');
 end
 
 %plot dist
