@@ -55,21 +55,21 @@ caught = 0;
 %meshgrid for distance calcs
 [x, y] = meshgrid(1:size(envmap, 1), 1:size(envmap, 2));
 
-for i = 1:80
+for i = 1:100
     %draw the positions
     if (hr ~= -1)
         delete(hr);
     end
     figure(1);
     axes(sp1);
-    hr = text(robotpos(1), robotpos(2), 'R', 'Color', 'g', 'FontWeight', 'bold');
-    hr0 = scatter(robotpos(1), robotpos(2), 10, 'g', 'filled');
+    hr = text(robotpos(1), robotpos(2), 'R', 'Color', 'w', 'FontWeight', 'bold');
+    hr0 = scatter(robotpos(1), robotpos(2), 10, 'w', 'filled');
     
     axes(sp2);
     imshow((exploredmap.*~obsmap + 0.5*(~exploredmap))');
     
     axes(sp3);
-    imshow(goalmap'/max(max(goalmap)));
+    imshow(goalmap/max(max(goalmap)));
     hold on;
     [~, n] = max(goalmap(:));
     [x_max, y_max] = ind2sub(size(goalmap), n);
@@ -78,9 +78,9 @@ for i = 1:80
         delete(goal_guess_plot);
         delete(goal_guess_plot2);
     end
-    goal_guess_plot = scatter(x_max, y_max, 'm', 'LineWidth', 2);  
+    goal_guess_plot = scatter(y_max, x_max, 'm', 'LineWidth', 2);  
     axes(sp3);
-    goal_guess_plot2 = scatter(x_max, y_max, 'm', 'LineWidth', 2);
+    goal_guess_plot2 = scatter(y_max, x_max, 'm', 'LineWidth', 2);
     hold off;
     
     %call robot planner to find what they want to do
@@ -131,7 +131,7 @@ for i = 1:80
     p_gau = 1+(contam_reading*(exp(-1*(dis-exp_dist).^2/(2*c^2))-1));
     axes(sp4);
     imshow(p_gau);
-    pause(0.1);
+%     pause(0.1);
     
     goalmap = goalmap.*p_gau;
     goalmap = goalmap ./ sum(sum(goalmap)); %normalize probs to sum of 1
