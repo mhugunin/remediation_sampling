@@ -147,11 +147,18 @@ static vector<pair<int, int>> planner(
     unordered_set<state_t, Hash, Eq> closed;
 
     // find x,y of most likely contamination source from goalMap
-    vector<int>::iterator maxElement;
-    maxElement = max_element(goalMap.begin(), goalMap.end());
-    int dist = distance(goalMap.begin(), maxElement);
-    int sink_x = dist % x_size; //col
-    int sink_y = dist / y_size; //row
+    double mostLikely = std::numeric_limits<double>::lowest();
+    int sink_x = 0;
+    int sink_y = 0;
+    for(int i = 0; i < y_size; ++i){
+        for(int j = 0; j < x_size; ++j){
+            if(goalMap[GETMAPINDEX(j,i, x_size, y_size)] > mostLikely){
+                mostLikely = goalMap[GETMAPINDEX(j,i, x_size, y_size)];
+                sink_x = j;
+                sink_y = i;
+            }
+        }
+    }
 
     state_t sink = make_shared<State>(sink_x, sink_y, nullptr, 0); //sink node = most likely point on map to be contamination source
 
