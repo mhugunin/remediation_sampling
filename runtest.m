@@ -33,8 +33,8 @@ hr = -1;
 numofmoves = 0;
 caught = 0;
 c0 = clock();
-for i = 1:2000
 
+for i = 1:2000
     %draw the positions
     if (hr ~= -1)
         delete(hr);
@@ -49,29 +49,35 @@ for i = 1:2000
     tStart = tic;
     
     % want our planner to return entire path to next frontier location
-    localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
+    %localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
+    localplan = [10 11; 10 12; 10 13]; %TEMP STAND-IN
     %compute movetime for the target
     tElapsed = toc(tStart);
     timeTaken = tElapsed*1000; % in ms
     
-    movetime = max(1, ceil(timeTaken/200));
+    %movetime = max(1, ceil(timeTaken/200));
     
-    %check that the new commanded position is valid
-    if (newrobotpos(1) < 1 || newrobotpos(1) > size(envmap, 1) || ...
-            newrobotpos(2) < 1 || newrobotpos(2) > size(envmap, 2))
-        fprintf(1, 'ERROR: out-of-map robot position commanded\n');
-        return;
-    elseif (obsmap(newrobotpos(1), newrobotpos(2)) ~= 0)
-        fprintf(1, 'ERROR: invalid robot position commanded\n');
-        return;
-    elseif (abs(newrobotpos(1)-robotpos(1)) > 1 || abs(newrobotpos(2)-robotpos(2)) > 1)
-        fprintf(1, 'ERROR: invalid robot move commanded\n');
-        return;
-    end        
-       
-    %make the moves
-    robotpos = newrobotpos;
-    numofmoves = numofmoves + 1;
+    for i = 1:size(localplan, 1)
+        newrobotpos = localplan(i, :);
+        %check that the new commanded position is valid
+        if (newrobotpos(1) < 1 || newrobotpos(1) > size(envmap, 1) || ...
+                newrobotpos(2) < 1 || newrobotpos(2) > size(envmap, 2))
+            fprintf(1, 'ERROR: out-of-map robot position commanded\n');
+            return;
+        elseif (obsmap(newrobotpos(1), newrobotpos(2)) ~= 0)
+            fprintf(1, 'ERROR: invalid robot position commanded\n');
+            return;
+        elseif (abs(newrobotpos(1)-robotpos(1)) > 1 || abs(newrobotpos(2)-robotpos(2)) > 1)
+            fprintf(1, 'ERROR: invalid robot move commanded\n');
+            return;
+        end        
+
+        %make the moves
+        robotpos = newrobotpos;
+        numofmoves = numofmoves + 1;
+        
+        pause();
+    end
     
     %TODO: Implement stopping condition -> should be signaled by the
     %planner when it thinks it found the source
@@ -83,6 +89,6 @@ for i = 1:2000
     
 end
 
-fprintf(1, 'Robot stopped=%d, number of moves made=%d\n', caught, numofmoves);
-c = clock();
-fprintf(1, 'duration=%d\n', (c(5) - c0(5)) * 60 + c(6) - c0(6));
+%fprintf(1, 'Robot stopped=%d, number of moves made=%d\n', caught, numofmoves);
+%c = clock();
+%fprintf(1, 'duration=%d\n', (c(5) - c0(5)) * 60 + c(6) - c0(6));

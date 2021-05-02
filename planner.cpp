@@ -12,12 +12,12 @@
 #include <memory>
 
 using namespace std;
-// #include "mex.h"
+#include "mex.h"
 
 /* Input Arguments */
 #define	ENVMAP_IN       prhs[0]
 #define	OBSMAP_IN       prhs[1]
-#define	EXPLROEDMAP_IN  prhs[2]
+#define	EXPLOREDMAP_IN  prhs[2]
 #define GOALMAP_IN      prhs[3]
 #define ROBOT_IN        prhs[4]
 
@@ -49,7 +49,7 @@ int xy2count(int x, int y, int y_size){
     return x*y_size + y;
 }
 
-bool willCollide(int x, int y, int* obstacleMap, int x_size, int y_size){
+bool willCollide(int x, int y, double* obstacleMap, int x_size, int y_size){
     return (int)obstacleMap[GETMAPINDEX(x, y, x_size, y_size)];
 }
 
@@ -122,8 +122,8 @@ double euclideanDist(int x1, int y1, int x2, int y2){
 // multigoal backwards A*
 static vector<pair<int, int>> planner(
             double* contaminationMap,
-            int* obstacleMap,
-            int* exploredMap,
+            double* obstacleMap,
+            double* exploredMap,
             double* goalMap, //liklihood distribution
             int x_size, //size of obstacle/contamination Map
             int y_size,
@@ -253,8 +253,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int x_size = mxGetM(ENVMAP_IN);
     int y_size = mxGetN(ENVMAP_IN);
     double* envmap = mxGetPr(ENVMAP_IN);
-    int* obsmap = mxGetPr(OBSMAP_IN);
-    int* exploredmap = mxGetPr(EXPLOREDMAP_IN);
+    double* obsmap = mxGetPr(OBSMAP_IN);
+    double* exploredmap = mxGetPr(EXPLOREDMAP_IN);
     double* goalmap = mxGetPr(GOALMAP_IN);
     
     /* get the dimensions of the robotpose and the robotpose itself*/     
