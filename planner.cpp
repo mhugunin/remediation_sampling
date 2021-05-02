@@ -38,10 +38,26 @@ using namespace std;
 
 int temp = 0;
 int firstCall = 1;
-unordered_set <pair<int, int>> frontier;
 
-bool willCollide(int x, int y, double* obstacleMap, int x_size, int y_size){
-    return (int)obstacleMap[GETMAPINDEX(x, y, x_size, y_size)];
+class frontierHash{
+public:
+    size_t operator()(const pair<int, int> &n) const {
+        return (size_t)n.first << 32 & (size_t)n.second;
+    }
+};
+
+class frontierEq{
+public:
+    bool operator()(pair<int, int> n1, pair<int, int> n2) const{
+        bool eq = (n1.first == n2.first && n1.second == n2.second);
+        return eq;
+    }
+};
+
+unordered_set <pair<int, int>, frontierHash, frontierEq> frontier;
+
+bool willCollide(int x, int y, bool* obstacleMap, int x_size, int y_size){
+    return (bool)(int)obstacleMap[GETMAPINDEX(x, y, x_size, y_size)];
 }
 
 double sample(int x, int y, double* contaminationMap, int x_size, int y_size){
@@ -113,7 +129,7 @@ double euclideanDist(int x1, int y1, int x2, int y2){
 // multigoal backwards A*
 static vector<pair<int, int>> planner(
             double* contaminationMap,
-            double* obstacleMap,
+            bool* obstacleMap,
             double* exploredMap,
             double* goalMap, //liklihood distribution
             int x_size, //size of obstacle/contamination Map
@@ -129,6 +145,7 @@ static vector<pair<int, int>> planner(
 
         // Get frontier from goalMap
     if(firstCall){ // first time calling planner
+        printf("first Call: %d\n", __LINE__);
         // add surronding nodes of the current robot positions
         for (int dir = 0; dir < NUMOFDIRS; dir++)
             {   
@@ -168,7 +185,8 @@ static vector<pair<int, int>> planner(
     state_t sink = make_shared<State>(sink_x, sink_y, nullptr, 0); //sink node = most likely point on map to be contamination source
 
     int nextId = 1;
-    vector<state_t> goals(frontier.size()); // vector of possible goals
+    vector<state_t> goals; // vector of possible goals
+    printf("Frontier size: %d, line: %d\n", frontier.size(), __LINE__);
 
     for(auto i: frontier){
         state_t n = make_shared<State>(i.first, i.second, sink, nextId);
@@ -176,14 +194,20 @@ static vector<pair<int, int>> planner(
         n->h = euclideanDist(robotposeX, robotposeY, i.first, i.second); // euclidean distance from node to robot's current position
         n->f = n->g + n->h;
         nextId ++;
+        goals.push_back(n);
     }
 
+    printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
+
     open.push(sink);
+
+    printf("pre while loop: %d\n", __LINE__);
     
     while(!open.empty()){
         // get current node
         state_t current_node = open.top();
         open.pop();
+        printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
         // add to closed set
         auto iterator = closed.find(current_node);
         if(iterator != closed.end()){
@@ -195,11 +219,13 @@ static vector<pair<int, int>> planner(
     
         // check if current node = start node = robot current position
         if (current_node->robotposeX == robotposeX && current_node->robotposeY == robotposeY) {
+
+            printf("Found robot, about to get path: %d\n", __LINE__);
             vector<pair<int, int>> path = getPath(current_node, plan_len);
             // expand the frontier from last node
             auto chosenGoal = path[path.size()-1];
             // remove the frontier node
-            frontier.remove(chosenGoal);
+            frontier.erase(chosenGoal);
              for (int dir = 0; dir < NUMOFDIRS; dir++)
             {   
                 int newx = chosenGoal.first + dX[dir];
@@ -219,7 +245,9 @@ static vector<pair<int, int>> planner(
         }
         if(current_node == sink){
             // generate successors for sink only
+            printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
             for(state_t g: goals){
+                printf("goals node ID: %d, line: %d\n", g->id, __LINE__);
                 open.push(g);
             }
         } else {
@@ -251,6 +279,11 @@ static vector<pair<int, int>> planner(
             }
         }
     }
+
+    printf("Broke out of while loop: %d\n", __LINE__);
+    vector<pair<int, int>> default_vec;
+    default_vec.push_back(make_pair(-1, -1));
+    return default_vec;
 }
 
 //prhs contains input parameters (3): 
@@ -271,13 +304,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
     } else if (nlhs != 1) {
 	    mexErrMsgIdAndTxt( "MATLAB:planner:maxlhs",
                 "One output argument required."); 
-    } 
+    }
         
     /* get the dimensions of the map and the map matrix itself*/     
     int x_size = mxGetM(ENVMAP_IN);
     int y_size = mxGetN(ENVMAP_IN);
     double* envmap = mxGetPr(ENVMAP_IN);
-    double* obsmap = mxGetPr(OBSMAP_IN);
+    bool* obsmap = mxGetLogicals(OBSMAP_IN);
     double* exploredmap = mxGetPr(EXPLOREDMAP_IN);
     double* goalmap = mxGetPr(GOALMAP_IN);
     
@@ -295,6 +328,8 @@ void mexFunction( int nlhs, mxArray *plhs[],
     /* Create a matrix for the return action */ 
 
     int plan_len = 0;
+
+    printf("About to call planner: %d\n", __LINE__);
             
     /* Do the actual planning in a subroutine */
     vector<pair<int, int>> path = planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);

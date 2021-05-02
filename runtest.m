@@ -85,12 +85,12 @@ for i = 1:80
     %call robot planner to find what they want to do
     %tStart = tic;
     % want our planner to return entire path to next frontier location
-    %localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
-    localplan = [robotpos(1)-1 robotpos(2)-1; robotpos(1)-2, robotpos(2)-2]; %TEMP STAND-IN
-    
-    if i > 20
-        localplan = [robotpos(1)-1 robotpos(2); robotpos(1)-2, robotpos(2)];
-    end
+    localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
+%     localplan = [robotpos(1)-1 robotpos(2)-1; robotpos(1)-2, robotpos(2)-2]; %TEMP STAND-IN
+%     
+%     if i > 20
+%         localplan = [robotpos(1)-1 robotpos(2); robotpos(1)-2, robotpos(2)];
+%     end
     
     %compute movetime for the target
     %tElapsed = toc(tStart);
