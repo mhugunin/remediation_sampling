@@ -130,7 +130,7 @@ double euclideanDist(int x1, int y1, int x2, int y2){
 static vector<pair<int, int>> planner(
             double* contaminationMap,
             bool* obstacleMap,
-            double* exploredMap,
+            bool* exploredMap,
             double* goalMap, //liklihood distribution
             int x_size, //size of obstacle/contamination Map
             int y_size,
@@ -217,7 +217,7 @@ static vector<pair<int, int>> planner(
         else {
             closed.insert(current_node);
         }
-    
+
         // check if current node = start node = robot current position
         if (current_node->robotposeX == robotposeX && current_node->robotposeY == robotposeY) {
 
@@ -227,17 +227,19 @@ static vector<pair<int, int>> planner(
             auto chosenGoal = path[path.size()-1];
             // remove the frontier node
             frontier.erase(chosenGoal);
-             for (int dir = 0; dir < NUMOFDIRS; dir++)
+            exploredMap[GETMAPINDEX(chosenGoal.first, chosenGoal.second, x_size, y_size)] = true;
+            for (int dir = 0; dir < NUMOFDIRS; dir++)
             {   
                 int newx = chosenGoal.first + dX[dir];
                 int newy = chosenGoal.second + dY[dir];
 
                 pair<int, int> prospective = make_pair(newx, newy);
-
                 //collision check and then add to frontier vector
                 if(!willCollide(newx, newy, obstacleMap, x_size, y_size)){
-                    if(!exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] && frontier.find(prospective) != frontier.end()){ // not already in explored map and not already in frontier
+                    if(!exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] && frontier.find(prospective) == frontier.end()){ // not already in explored map and not already in frontier
                         frontier.insert(prospective);
+                        printf("Inserted into frontier!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                        printf("location: (%d, %d)\n", prospective.first, prospective.second);
                     }
                 }
             }
@@ -312,7 +314,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int y_size = mxGetN(ENVMAP_IN);
     double* envmap = mxGetPr(ENVMAP_IN);
     bool* obsmap = mxGetLogicals(OBSMAP_IN);
-    double* exploredmap = mxGetPr(EXPLOREDMAP_IN);
+    bool* exploredmap = mxGetLogicals(EXPLOREDMAP_IN);
     double* goalmap = mxGetPr(GOALMAP_IN);
     
     /* get the dimensions of the robotpose and the robotpose itself*/     

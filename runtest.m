@@ -38,6 +38,7 @@ imshow(rgbImage);
 hold on;
 
 exploredmap = zeros(size(envmap));
+exploredmap = logical(exploredmap);
 exploredmap(robotstart(1), robotstart(2)) = 1;
 
 goalmap = ones(size(envmap)) / (size(envmap, 1) * size(envmap, 2));
@@ -114,7 +115,7 @@ for i = 1:80
 
         %make the moves
         robotpos = double(newrobotpos);
-        exploredmap(robotpos(1), robotpos(2)) = 1;
+        % exploredmap(robotpos(1), robotpos(2)) = 1;
         numofmoves = numofmoves + 1;
         
         pause(0.1);
