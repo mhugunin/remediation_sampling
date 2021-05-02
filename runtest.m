@@ -13,7 +13,19 @@ else
 end
 
 %draw the environment
-figure('units','normalized','outerposition',[0 0 1 1]);
+fig = figure('units','normalized','outerposition',[0 0 1 1]);
+sp1 = subplot(2,2,1);
+sp1.Position = sp1.Position + [0.075 -0.05 0 0.1];
+imshow(ones(size(envmap')));
+sp2 = subplot(2,2,2);
+sp2.Position = sp2.Position + [-0.075 -0.05 0 0.1];
+imshow(ones(size(envmap')));
+sp3 = subplot(2,2,3);
+sp3.Position = sp3.Position + [0.075 -0.05 0 0.1];
+imshow(ones(size(envmap')));
+sp4 = subplot(2,2,4);
+sp4.Position = sp4.Position + [-0.075 -0.05 0 0.1];
+imshow(ones(size(envmap')));
 % imagesc(envmap'); axis square; colorbar; colormap jet; hold on;
 % imagesc(obsmap'); axis square; colorbar; colormap jet;
 
@@ -21,7 +33,7 @@ figure('units','normalized','outerposition',[0 0 1 1]);
 imInd = gray2ind(envmap', 256);
 rgbImage = ind2rgb(imInd, jet(256));
 rgbImage(:,:,:) = rgbImage(:,:,:) .* ~obsmap(:,:)';
-subplot(2,2,1);
+axes(sp1);
 imshow(rgbImage);
 hold on;
 
@@ -48,27 +60,25 @@ for i = 1:80
         delete(hr);
     end
     figure(1);
-    subplot(2,2,1);
+    axes(sp1);
     hr = text(robotpos(1), robotpos(2), 'R', 'Color', 'g', 'FontWeight', 'bold');
     hr0 = scatter(robotpos(1), robotpos(2), 10, 'g', 'filled');
     
-    figure(1);
-    subplot(2,2,2);
+    axes(sp2);
     imshow((exploredmap.*~obsmap + 0.5*(~exploredmap))');
     
-    figure(1);
-    subplot(2,2,3);
+    axes(sp3);
     imshow(goalmap'/max(max(goalmap)));
     hold on;
     [~, n] = max(goalmap(:));
     [x_max, y_max] = ind2sub(size(goalmap), n);
-    subplot(2,2,1);
+    axes(sp1);
     if (goal_guess_plot ~= -1)
         delete(goal_guess_plot);
         delete(goal_guess_plot2);
     end
     goal_guess_plot = scatter(x_max, y_max, 'm', 'LineWidth', 2);  
-    subplot(2,2,3);
+    axes(sp3);
     goal_guess_plot2 = scatter(x_max, y_max, 'm', 'LineWidth', 2);
     hold off;
     
@@ -118,9 +128,8 @@ for i = 1:80
     c = 5+10*(1-contam_reading);
     
     p_gau = 1+(contam_reading*(exp(-1*(dis-exp_dist).^2/(2*c^2))-1));
-    figure(1);
-    subplot(2,2,4);
-    imshow(p_gau');
+    axes(sp4);
+    imshow(p_gau);
     pause(0.1);
     
     goalmap = goalmap.*p_gau;
