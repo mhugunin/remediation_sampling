@@ -113,7 +113,7 @@ for i = 1:80
         end        
 
         %make the moves
-        robotpos = newrobotpos;
+        robotpos = double(newrobotpos);
         exploredmap(robotpos(1), robotpos(2)) = 1;
         numofmoves = numofmoves + 1;
         

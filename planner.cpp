@@ -208,6 +208,7 @@ static vector<pair<int, int>> planner(
         state_t current_node = open.top();
         open.pop();
         printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
+        printf("Current Node loc: (%d, %d)\n", current_node->robotposeX, current_node->robotposeY);
         // add to closed set
         auto iterator = closed.find(current_node);
         if(iterator != closed.end()){
@@ -335,15 +336,19 @@ void mexFunction( int nlhs, mxArray *plhs[],
     vector<pair<int, int>> path = planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);
 
     // planner needs to return / set a vector or something for actual plan
-
+    printf("Path size: %d\n", path.size());
+    printf("Plan len: %d\n", plan_len);
+    
     // set the output to returned plan
-    plhs[0] = mxCreateNumericMatrix( (mwSize)2, (mwSize)plan_len, mxINT32_CLASS, mxREAL); 
+    plhs[0] = mxCreateNumericMatrix( (mwSize)plan_len, (mwSize)2, mxINT32_CLASS, mxREAL);
     int* action_ptr = (int*)  mxGetPr(plhs[0]);
 
     // loop through and assign to action_ptr for each location in plan
-    for(int i = 0; i < path.size(); ++i){
-        action_ptr[GETMAPINDEX(i + 1,1, x_size, y_size)] = path[i].first;
-        action_ptr[GETMAPINDEX(i + 1,2, x_size, y_size)] = path[i].second;
+    for(int i = 1; i < path.size(); ++i){
+        printf("Path node loc: (%d, %d)\n", path[i].first, path[i].second);
+        
+        action_ptr[GETMAPINDEX(i,1, plan_len, 2)] = path[i].first;
+        action_ptr[GETMAPINDEX(i,2, plan_len, 2)] = path[i].second;
     }
     return;
     
