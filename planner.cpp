@@ -135,6 +135,9 @@ static vector<pair<int, int>> planner(
                 int newx = robotposeX + dX[dir];
                 int newy = robotposeY + dY[dir];
                 //collision check and then add to frontier vector
+                if(!willCollide(newx, newy, obstacleMap, x_size, y_size)){
+                    frontier.insert(make_pair(newx, newy));
+                }
             }
     }
     firstCall = 0;
@@ -194,13 +197,22 @@ static vector<pair<int, int>> planner(
         if (current_node->robotposeX == robotposeX && current_node->robotposeY == robotposeY) {
             vector<pair<int, int>> path = getPath(current_node, plan_len);
             // expand the frontier from last node
+            auto chosenGoal = path[path.size()-1];
             // remove the frontier node
+            frontier.remove(chosenGoal);
              for (int dir = 0; dir < NUMOFDIRS; dir++)
             {   
-                int newx = robotposeX + dX[dir];
-                int newy = robotposeY + dY[dir];
+                int newx = chosenGoal.first + dX[dir];
+                int newy = chosenGoal.second + dY[dir];
+
+                pair<int, int> prospective = make_pair(newx, newy);
+
                 //collision check and then add to frontier vector
-                // not already in explored map and not already in frontier
+                if(!willCollide(newx, newy, obstacleMap, x_size, y_size)){
+                    if(!exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] && frontier.find(prospective) != frontier.end()){ // not already in explored map and not already in frontier
+                        frontier.insert(prospective);
+                    }
+                }
             }
 
             return path;
