@@ -1,6 +1,7 @@
 /*=================================================================
  *
  * planner.c
+    X IS NUMBER OF COLUMNS, Y IS NUMBER OF ROWS!
  *
  *=================================================================*/
 #include <math.h>
@@ -36,18 +37,8 @@ using namespace std;
 #define NUMOFDIRS 8
 
 int temp = 0;
-vector <pair<int, int>> frontier; //@TODO: how do we update this?
-
-//3 functions to go between a unique node id <-> x/y on map
-int xcord(int counter, int y_size){
-    return counter/y_size;
-}
-int ycord(int counter, int y_size){
-    return counter%y_size;
-}
-int xy2count(int x, int y, int y_size){
-    return x*y_size + y;
-}
+int firstCall = 1;
+unordered_set <pair<int, int>> frontier;
 
 bool willCollide(int x, int y, double* obstacleMap, int x_size, int y_size){
     return (int)obstacleMap[GETMAPINDEX(x, y, x_size, y_size)];
@@ -105,7 +96,7 @@ vector<pair<int, int>> getPath(state_t curr, int* planLen){
     pair<int, int> g = make_pair(curr->robotposeX, curr->robotposeY);
     path.push_back(g);
     int length = 0;
-    while(c->parent != nullptr) {
+    while(c->parent->parent != nullptr) {
         c = c->parent;
         pair<int, int> next = make_pair(c->robotposeX, c->robotposeY);
         path.push_back(next);
@@ -132,10 +123,21 @@ static vector<pair<int, int>> planner(
             int* plan_len
 		   )
 {
-       //8-connected grid
+    //8-connected grid
     int dX[NUMOFDIRS] = {-1, -1, -1,  0,  0,  1, 1, 1};    
     int dY[NUMOFDIRS] = {-1,  0,  1, -1,  1, -1, 0, 1};
-    
+
+        // Get frontier from goalMap
+    if(firstCall){ // first time calling planner
+        // add surronding nodes of the current robot positions
+        for (int dir = 0; dir < NUMOFDIRS; dir++)
+            {   
+                int newx = robotposeX + dX[dir];
+                int newy = robotposeY + dY[dir];
+                //collision check and then add to frontier vector
+            }
+    }
+    firstCall = 0;
     printf("call=%d\n", temp);
     temp = temp+1;
     
@@ -152,10 +154,10 @@ static vector<pair<int, int>> planner(
     int sink_y = 0;
     for(int i = 0; i < y_size; ++i){
         for(int j = 0; j < x_size; ++j){
-            if(goalMap[GETMAPINDEX(j,i, x_size, y_size)] > mostLikely){
-                mostLikely = goalMap[GETMAPINDEX(j,i, x_size, y_size)];
-                sink_x = j;
-                sink_y = i;
+            if(goalMap[GETMAPINDEX(j+1,i+1, x_size, y_size)] > mostLikely){
+                mostLikely = goalMap[GETMAPINDEX(j+1,i+1, x_size, y_size)];
+                sink_x = j + 1;
+                sink_y = i + 1;
             }
         }
     }
@@ -191,6 +193,16 @@ static vector<pair<int, int>> planner(
         // check if current node = start node = robot current position
         if (current_node->robotposeX == robotposeX && current_node->robotposeY == robotposeY) {
             vector<pair<int, int>> path = getPath(current_node, plan_len);
+            // expand the frontier from last node
+            // remove the frontier node
+             for (int dir = 0; dir < NUMOFDIRS; dir++)
+            {   
+                int newx = robotposeX + dX[dir];
+                int newy = robotposeY + dY[dir];
+                //collision check and then add to frontier vector
+                // not already in explored map and not already in frontier
+            }
+
             return path;
         }
         if(current_node == sink){
@@ -273,7 +285,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int plan_len = 0;
             
     /* Do the actual planning in a subroutine */
-    planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);
+    vector<pair<int, int>> path = planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);
 
     // planner needs to return / set a vector or something for actual plan
 
@@ -282,6 +294,10 @@ void mexFunction( int nlhs, mxArray *plhs[],
     int* action_ptr = (int*)  mxGetPr(plhs[0]);
 
     // loop through and assign to action_ptr for each location in plan
+    for(int i = 0; i < path.size(); ++i){
+        action_ptr[GETMAPINDEX(i + 1,1, x_size, y_size)] = path[i].first;
+        action_ptr[GETMAPINDEX(i + 1,2, x_size, y_size)] = path[i].second;
+    }
     return;
     
 }
