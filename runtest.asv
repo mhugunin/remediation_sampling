@@ -8,7 +8,7 @@ if exist('mapfile', 'var')
     obsmap = map_struct.obstacles;
 else
     %TODO: should we specify target location?
-    [envmap, obsmap, sources] = generate_map(0, 0);
+    [envmap, obsmap] = generate_map(0, 0);
 end
 
 %draw the environment
@@ -82,12 +82,11 @@ for i = 1:2000
     %TODO: Implement stopping condition -> should be signaled by the
     %planner when it thinks it found the source
     %check if target is caught
-    for source_ind = 1:size(sources, 1)
-         if (abs(robotpos(1)-sources(source_ind, 1)) <= 1 && abs(robotpos(2)-sources(source_ind, 2)) <= 1)
-             caught = 1;
-             break; %Condition will be different if multigoal
-         end
-    end
+%     if (abs(robotpos(1)-targetpos(1)) <= 1 && abs(robotpos(2)-targetpos(2)) <= 1)
+%         caught = 1;
+%         break;
+%     end
+    
 end
 
 %fprintf(1, 'Robot stopped=%d, number of moves made=%d\n', caught, numofmoves);

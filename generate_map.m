@@ -1,4 +1,4 @@
-function [contam, obstacles] = generate_map(display, save_maps)
+function [contam, obstacles, sources] = generate_map(display, save_maps)
 
 if display
     close all;
