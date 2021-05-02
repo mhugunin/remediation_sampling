@@ -21,6 +21,7 @@ figure('units','normalized','outerposition',[0 0 1 1]);
 imInd = gray2ind(envmap', 256);
 rgbImage = ind2rgb(imInd, jet(256));
 rgbImage(:,:,:) = rgbImage(:,:,:) .* ~obsmap(:,:)';
+subplot(2,2,1);
 imshow(rgbImage);
 hold on;
 
@@ -33,6 +34,7 @@ robotpos = robotstart;
 
 %now comes the main loop
 hr = -1;
+goal_guess_plot = -1;
 numofmoves = 0;
 caught = 0;
 %c0 = clock();
@@ -40,26 +42,45 @@ caught = 0;
 %meshgrid for distance calcs
 [x, y] = meshgrid(1:size(envmap, 1), 1:size(envmap, 2));
 
-for i = 1:2000
+for i = 1:80
     %draw the positions
     if (hr ~= -1)
         delete(hr);
     end
     figure(1);
+    subplot(2,2,1);
     hr = text(robotpos(1), robotpos(2), 'R', 'Color', 'g', 'FontWeight', 'bold');
     hr0 = scatter(robotpos(1), robotpos(2), 10, 'g', 'filled');
     
-    figure(2);
-    imshow(exploredmap.*~obsmap + 0.5*(~exploredmap));
+    figure(1);
+    subplot(2,2,2);
+    imshow((exploredmap.*~obsmap + 0.5*(~exploredmap))');
     
-    figure(3);
-    imshow(goalmap/max(max(goalmap)));
+    figure(1);
+    subplot(2,2,3);
+    imshow(goalmap'/max(max(goalmap)));
+    hold on;
+    [~, n] = max(goalmap(:));
+    [x_max, y_max] = ind2sub(size(goalmap), n);
+    subplot(2,2,1);
+    if (goal_guess_plot ~= -1)
+        delete(goal_guess_plot);
+        delete(goal_guess_plot2);
+    end
+    goal_guess_plot = scatter(x_max, y_max, 'm', 'LineWidth', 2);  
+    subplot(2,2,3);
+    goal_guess_plot2 = scatter(x_max, y_max, 'm', 'LineWidth', 2);
+    hold off;
     
     %call robot planner to find what they want to do
     %tStart = tic;
     % want our planner to return entire path to next frontier location
     %localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
     localplan = [robotpos(1)-1 robotpos(2)-1; robotpos(1)-2, robotpos(2)-2]; %TEMP STAND-IN
+    
+    if i > 20
+        localplan = [robotpos(1)-1 robotpos(2); robotpos(1)-2, robotpos(2)];
+    end
     
     %compute movetime for the target
     %tElapsed = toc(tStart);
@@ -97,8 +118,9 @@ for i = 1:2000
     c = 5+10*(1-contam_reading);
     
     p_gau = 1+(contam_reading*(exp(-1*(dis-exp_dist).^2/(2*c^2))-1));
-    figure(4);
-    imshow(p_gau);
+    figure(1);
+    subplot(2,2,4);
+    imshow(p_gau');
     pause(0.1);
     
     goalmap = goalmap.*p_gau;
