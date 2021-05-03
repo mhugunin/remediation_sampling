@@ -19,7 +19,7 @@ using namespace std;
 #define	ENVMAP_IN       prhs[0]
 #define	OBSMAP_IN       prhs[1]
 #define	EXPLOREDMAP_IN  prhs[2]
-#define GOALMAP_IN      prhs[3]
+#define GOAL_IN      prhs[3]
 #define ROBOT_IN        prhs[4]
 
 //access to the map is shifted to account for 0-based indexing in the map, whereas
@@ -131,11 +131,12 @@ static vector<pair<int, int>> planner(
             double* contaminationMap,
             bool* obstacleMap,
             bool* exploredMap,
-            double* goalMap, //liklihood distribution
             int x_size, //size of obstacle/contamination Map
             int y_size,
             int robotposeX, //robot's current position = goal in backwards A*
             int robotposeY,
+            int goalposeX,
+            int goalposeY,
             int* plan_len
 		   )
 {
@@ -170,17 +171,19 @@ static vector<pair<int, int>> planner(
 
     // find x,y of most likely contamination source from goalMap
     double mostLikely = std::numeric_limits<double>::lowest();
-    int sink_x = 0;
-    int sink_y = 0;
-    for(int i = 0; i < y_size; ++i){
-        for(int j = 0; j < x_size; ++j){
-            if(goalMap[GETMAPINDEX(j+1,i+1, x_size, y_size)] > mostLikely){
-                mostLikely = goalMap[GETMAPINDEX(j+1,i+1, x_size, y_size)];
-                sink_x = j + 1;
-                sink_y = i + 1;
-            }
-        }
-    }
+    int sink_x = goalposeX;
+    int sink_y = goalposeY;
+    printf("Robot: (%d, %d)\n", robotposeX, robotposeY);
+    printf("goal: (%d, %d)\n", sink_x, sink_y);
+    // for(int i = 0; i < y_size; ++i){
+    //     for(int j = 0; j < x_size; ++j){
+    //         if(goalMap[GETMAPINDEX(j+1,i+1, x_size, y_size)] > mostLikely){
+    //             mostLikely = goalMap[GETMAPINDEX(j+1,i+1, x_size, y_size)];
+    //             sink_x = j + 1;
+    //             sink_y = i + 1;
+    //         }
+    //     }
+    // }
 
     state_t sink = make_shared<State>(sink_x, sink_y, nullptr, 0); //sink node = most likely point on map to be contamination source
 
@@ -322,8 +325,17 @@ void mexFunction( int nlhs, mxArray *plhs[],
     double* envmap = mxGetPr(ENVMAP_IN);
     bool* obsmap = mxGetLogicals(OBSMAP_IN);
     bool* exploredmap = mxGetLogicals(EXPLOREDMAP_IN);
-    double* goalmap = mxGetPr(GOALMAP_IN);
-    
+
+    int goalpose_M = mxGetM(GOAL_IN);
+    int goalpose_N = mxGetN(GOAL_IN);
+    if(goalpose_M != 1 || goalpose_N != 2){
+	    mexErrMsgIdAndTxt( "MATLAB:planner:invalidgoalpose",
+                "goalpose vector should be 1 by 2.");         
+    }
+    double* goalposeV = mxGetPr(GOAL_IN);
+    int goalposeX = (int)goalposeV[0];
+    int goalposeY = (int)goalposeV[1];
+
     /* get the dimensions of the robotpose and the robotpose itself*/     
     int robotpose_M = mxGetM(ROBOT_IN);
     int robotpose_N = mxGetN(ROBOT_IN);
@@ -342,7 +354,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
     // printf("About to call planner: %d\n", __LINE__);
             
     /* Do the actual planning in a subroutine */
-    vector<pair<int, int>> path = planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);
+    vector<pair<int, int>> path = planner(envmap, obsmap, exploredmap, x_size, y_size, robotposeX, robotposeY, goalposeX, goalposeY, &plan_len);
 
     // planner needs to return / set a vector or something for actual plan
     // printf("Path size: %d\n", path.size());

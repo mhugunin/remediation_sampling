@@ -89,7 +89,7 @@ for i = 1:1000
     %call robot planner to find what they want to do
     %tStart = tic;
     % want our planner to return entire path to next frontier location
-    localplan = robotplanner(envmap, obsmap, exploredmap, goalmap, robotpos);
+    localplan = robotplanner(envmap, obsmap, exploredmap, [y_max x_max], robotpos);
 %     localplan = [robotpos(1)-1 robotpos(2)-1; robotpos(1)-2, robotpos(2)-2]; %TEMP STAND-IN
 %     
 %     if i > 20
@@ -144,14 +144,18 @@ for i = 1:1000
     %TODO: Implement stopping condition -> should be signaled by the
     %planner when it thinks it found the source
     %check if target is caught
-    for source_ind = 1:size(sources, 1)
-         if (abs(robotpos(1)-sources(source_ind, 1)) <= 1 && abs(robotpos(2)-sources(source_ind, 2)) <= 1)
-             caught = 1;
-             break; %Condition will be different if multigoal
-         end
+%     for source_ind = 1:size(sources, 1)
+%          if (abs(robotpos(1)-sources(source_ind, 1)) <= 1 && abs(robotpos(2)-sources(source_ind, 2)) <= 1)
+%              caught = 1;
+%              break; %Condition will be different if multigoal
+%          end
+%     end
+    if (abs(robotpos(1) - y_max) <= 1 && abs(robotpos(2) - x_max) <= 1)
+        caught = 1;
+        break;
     end
 end
 
-%fprintf(1, 'Robot stopped=%d, number of moves made=%d\n', caught, numofmoves);
+fprintf(1, 'Robot stopped=%d, number of moves made=%d\n', caught, numofmoves);
 %c = clock();
 %fprintf(1, 'duration=%d\n', (c(5) - c0(5)) * 60 + c(6) - c0(6));
