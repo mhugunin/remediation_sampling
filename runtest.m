@@ -74,17 +74,17 @@ for i = 1:1000
     hold on;
     [~, n] = max(goalmap(:));
     [x_max, y_max] = ind2sub(size(goalmap), n);
-    axes(sp1);
-    if (goal_guess_plot ~= -1)
-        delete(goal_guess_plot);
-    end
-    goal_guess_plot = scatter(y_max, x_max, 'm', 'LineWidth', 2);  
-    axes(sp3);
     if (goal_guess_plot2 ~= -1) 
         delete(goal_guess_plot2);
     end
     goal_guess_plot2 = scatter(y_max, x_max, 'm', 'LineWidth', 2);
     hold off;
+    
+    axes(sp1);
+    if (goal_guess_plot ~= -1)
+        delete(goal_guess_plot);
+    end
+    goal_guess_plot = scatter(y_max, x_max, 'm', 'LineWidth', 2);   
     
     %call robot planner to find what they want to do
     %tStart = tic;
