@@ -126,9 +126,11 @@ for i = 1:200
     exp_dist = 35*((-1*log(contam_reading)).^(3/4));
     
     dis = sqrt((x-robotpos(1)).^2+(y-robotpos(2)).^2);
-    c = 5+10*(1-contam_reading);
+    c = 5+15*(1-contam_reading);
     
-    p_gau = 1+(contam_reading*(exp(-1*(dis-exp_dist).^2/(2*c^2))-1));
+    p_gau_far = 1+(contam_reading*(exp(-1*(dis-exp_dist).^2/(2*c^2))-1));
+    p_gau_near = 1+(contam_reading*(exp(-1*(dis-exp_dist).^2/(2.5*2*c^2))-1));
+    p_gau = p_gau_far.*(dis>exp_dist)+p_gau_near.*(dis<=exp_dist);
     axes(sp4);
     imshow(p_gau);
 %     pause(0.1);
