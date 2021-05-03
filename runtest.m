@@ -48,6 +48,7 @@ robotpos = robotstart;
 %now comes the main loop
 hr = -1;
 goal_guess_plot = -1;
+goal_guess_plot2 = -1;
 numofmoves = 0;
 caught = 0;
 %c0 = clock();
@@ -55,7 +56,7 @@ caught = 0;
 %meshgrid for distance calcs
 [x, y] = meshgrid(1:size(envmap, 1), 1:size(envmap, 2));
 
-for i = 1:200
+for i = 1:1000
     %draw the positions
     if (hr ~= -1)
         delete(hr);
@@ -76,10 +77,12 @@ for i = 1:200
     axes(sp1);
     if (goal_guess_plot ~= -1)
         delete(goal_guess_plot);
-        delete(goal_guess_plot2);
     end
     goal_guess_plot = scatter(y_max, x_max, 'm', 'LineWidth', 2);  
     axes(sp3);
+    if (goal_guess_plot2 ~= -1) 
+        delete(goal_guess_plot2);
+    end
     goal_guess_plot2 = scatter(y_max, x_max, 'm', 'LineWidth', 2);
     hold off;
     
