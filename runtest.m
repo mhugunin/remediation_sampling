@@ -121,7 +121,7 @@ for i = 1:1000
         % exploredmap(robotpos(1), robotpos(2)) = 1;
         numofmoves = numofmoves + 1;
         
-        pause(0.1);
+        %pause(0.1);
     end
     
     %Update contamination map
@@ -152,6 +152,7 @@ for i = 1:1000
 %     end
     if (abs(robotpos(1) - y_max) <= 1 && abs(robotpos(2) - x_max) <= 1)
         caught = 1;
+        fprintf(1, 'Distance from actual goal = %f\n', sqrt((sources(1,1) - y_max)^2 + (sources(1,2) - x_max)^2));
         break;
     end
 end
