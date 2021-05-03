@@ -188,13 +188,20 @@ static vector<pair<int, int>> planner(
     vector<state_t> goals; // vector of possible goals
     printf("Frontier size: %d, line: %d\n", frontier.size(), __LINE__);
 
-    for(auto i: frontier){
-        state_t n = make_shared<State>(i.first, i.second, sink, nextId);
-        n->g =  euclideanDist(i.first, i.second, sink_x, sink_y);//euclidean distance to the most likely contamination source
-        n->h = euclideanDist(robotposeX, robotposeY, i.first, i.second); // euclidean distance from node to robot's current position
-        n->f = n->g + n->h;
-        nextId ++;
-        goals.push_back(n);
+    if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(sink) != frontier.end()) {
+        // add sink to goals vector
+        state_t sink_copy = make_shared<State>(sink_x, sink_y, sink, -1);
+        goals.push_back(sink_copy);
+    }
+    else {
+        for(auto i: frontier){
+            state_t n = make_shared<State>(i.first, i.second, sink, nextId);
+            n->g =  euclideanDist(i.first, i.second, sink_x, sink_y);//euclidean distance to the most likely contamination source
+            n->h = euclideanDist(robotposeX, robotposeY, i.first, i.second); // euclidean distance from node to robot's current position
+            n->f = n->g + n->h;
+            nextId ++;
+            goals.push_back(n);
+        }
     }
 
     printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
