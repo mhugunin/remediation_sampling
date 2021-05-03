@@ -188,7 +188,7 @@ static vector<pair<int, int>> planner(
     vector<state_t> goals; // vector of possible goals
     printf("Frontier size: %d, line: %d\n", frontier.size(), __LINE__);
 
-    if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(sink) != frontier.end()) {
+    if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
         // add sink to goals vector
         state_t sink_copy = make_shared<State>(sink_x, sink_y, sink, -1);
         goals.push_back(sink_copy);
@@ -268,7 +268,7 @@ static vector<pair<int, int>> planner(
                 int newy = current_node->robotposeY + dY[dir];
                // check validity/within range
                 if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size){
-                    if (!willCollide(newx, newy, obstacleMap, x_size, y_size)) { //if free
+                    if (exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] == 1) { //if in explored region
                         // create new nodes
                         state_t child_shared = make_shared<State>(newx, newy, current_node, nextId);
                         // check if children are in closed list
