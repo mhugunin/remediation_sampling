@@ -7,8 +7,9 @@ end
 % randomize source location(s)?
 % make number of sources a parameter?
 sources = [268, 283];
-obstacles = (imread('map1.png')==0);
-obstacles = obstacles(:, :, 1);
+obs = imread('map1.png');
+obs = rgb2gray(obs);
+obstacles = obs <= 128;
 
 iter = 20; %steps for contamination spread
 
