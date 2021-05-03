@@ -207,8 +207,8 @@ static vector<pair<int, int>> planner(
         // get current node
         state_t current_node = open.top();
         open.pop();
-        printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
-        printf("Current Node loc: (%d, %d)\n", current_node->robotposeX, current_node->robotposeY);
+        // printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
+        // printf("Current Node loc: (%d, %d)\n", current_node->robotposeX, current_node->robotposeY);
         // add to closed set
         auto iterator = closed.find(current_node);
         if(iterator != closed.end()){
@@ -221,7 +221,7 @@ static vector<pair<int, int>> planner(
         // check if current node = start node = robot current position
         if (current_node->robotposeX == robotposeX && current_node->robotposeY == robotposeY) {
 
-            printf("Found robot, about to get path: %d\n", __LINE__);
+            // printf("Found robot, about to get path: %d\n", __LINE__);
             vector<pair<int, int>> path = getPath(current_node, plan_len);
             // expand the frontier from last node
             auto chosenGoal = path[path.size()-1];
@@ -238,8 +238,8 @@ static vector<pair<int, int>> planner(
                 if(!willCollide(newx, newy, obstacleMap, x_size, y_size)){
                     if(!exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] && frontier.find(prospective) == frontier.end()){ // not already in explored map and not already in frontier
                         frontier.insert(prospective);
-                        printf("Inserted into frontier!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                        printf("location: (%d, %d)\n", prospective.first, prospective.second);
+                        // printf("Inserted into frontier!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                        // printf("location: (%d, %d)\n", prospective.first, prospective.second);
                     }
                 }
             }
@@ -248,9 +248,9 @@ static vector<pair<int, int>> planner(
         }
         if(current_node == sink){
             // generate successors for sink only
-            printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
+            // printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
             for(state_t g: goals){
-                printf("goals node ID: %d, line: %d\n", g->id, __LINE__);
+                // printf("goals node ID: %d, line: %d\n", g->id, __LINE__);
                 open.push(g);
             }
         } else {
@@ -332,13 +332,13 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     int plan_len = 0;
 
-    printf("About to call planner: %d\n", __LINE__);
+    // printf("About to call planner: %d\n", __LINE__);
             
     /* Do the actual planning in a subroutine */
     vector<pair<int, int>> path = planner(envmap, obsmap, exploredmap, goalmap, x_size, y_size, robotposeX, robotposeY, &plan_len);
 
     // planner needs to return / set a vector or something for actual plan
-    printf("Path size: %d\n", path.size());
+    // printf("Path size: %d\n", path.size());
     printf("Plan len: %d\n", plan_len);
     
     // set the output to returned plan

@@ -55,7 +55,7 @@ caught = 0;
 %meshgrid for distance calcs
 [x, y] = meshgrid(1:size(envmap, 1), 1:size(envmap, 2));
 
-for i = 1:100
+for i = 1:200
     %draw the positions
     if (hr ~= -1)
         delete(hr);
