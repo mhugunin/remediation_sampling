@@ -71,7 +71,7 @@ while s <= sourcecount
         end
 
         [maxval, n] = max(goalmap(:));
-        [x_max, y_max] = ind2sub(size(goalmap), n)
+        [x_max, y_max] = ind2sub(size(goalmap), n);
 %         ids = find(goalmap(:)==maxval);
 %         [x_max_arr, y_max_arr] = ind2sub(size(goalmap), ids);
 %         x_max = sum(x_max_arr)/length(x_max_arr);
