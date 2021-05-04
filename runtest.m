@@ -188,9 +188,21 @@ while s <= sourcecount
     %              break; %Condition will be different if multigoal
     %          end
     %     end
-        if (abs(robotpos(1) - y_max) <= 1 && abs(robotpos(2) - x_max) <= 1)
+    
+        % need the nearest source to the current guess
+        min_dist_to_source = size(obsmap, 2);
+        closest_source_index = 1;
+        for j = 1:sourcecount
+            dist_to_source = sqrt((y_max-sources(j,1)).^2+(x_max-sources(j,2).^2));
+            if dist_to_source < min_dist_to_source
+                min_dist_to_source = dist_to_source;
+                closest_source_index = j;
+            end
+        end
+        
+        if (abs(robotpos(1) - sources(closest_source_index, 1)) <= 1 && abs(robotpos(2) - sources(closest_source_index, 2)) <= 1)
             caught = 1;
-            fprintf(1, 'Distance from actual goal = %f\n', sqrt((sources(1,1) - y_max)^2 + (sources(1,2) - x_max)^2));
+            fprintf(1, 'Found Source!\n');
             sourcelog(s, :) = [x_max, y_max];
             s = s + 1;
             dis = sqrt((x-robotpos(1)).^2+(y-robotpos(2)).^2);
