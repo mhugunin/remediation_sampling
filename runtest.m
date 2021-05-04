@@ -13,12 +13,12 @@ else
 end
 
 %draw the environment
-%fig = figure('units','normalized','outerposition',[0 0 1 1]);
-sp1 = subplot(2,1,1);
-sp1.Position = sp1.Position + [0.075 -0.05 0 0.1];
+fig = figure('units','normalized','outerposition',[0 0 1 1]);
+sp1 = subplot(1,2,1);
+sp1.Position = sp1.Position + [0 -0.05 0 0.1];
 imshow(ones(size(envmap')));
-sp2 = subplot(2,1,2);
-sp2.Position = sp2.Position + [0.075 -0.05 0 0.1];
+sp2 = subplot(1,2,2);
+sp2.Position = sp2.Position + [0 -0.05 0 0.1];
 imshow(ones(size(envmap')));
 % sp3 = subplot(2,2,3);
 % sp3.Position = sp3.Position + [0.075 -0.05 0 0.1];
