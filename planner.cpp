@@ -237,8 +237,12 @@ static vector<pair<int, int>> planner(
             if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
                 // add sink to path
                 //printf("%d\n", __LINE__);
-                path.insert(path.begin(), make_pair(sink_x, sink_y));
-                *plan_len = *plan_len + 1;
+                // check if current_node is within range of parent
+                state_t sink_parent = current_node->parent;
+                if (euclideanDist(current_node->robotposeX, current_node->robotposeY, sink_parent->robotposeX, sink_parent->robotposeY) < 1.5) {
+                    path.insert(path.begin(), make_pair(sink_x, sink_y));
+                    *plan_len = *plan_len + 1;
+                }
             }
             // expand the frontier from last node
             //printf("%d\n", __LINE__);
