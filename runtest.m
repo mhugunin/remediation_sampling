@@ -201,7 +201,7 @@ while s <= sourcecount
             end
         end
         
-        if (abs(robotpos(1) - sources(closest_source_index, 1)) <= 1 && abs(robotpos(2) - sources(closest_source_index, 2)) <= 1)
+        if (abs(robotpos(1) - sources(closest_source_index, 1)) <= 3 && abs(robotpos(2) - sources(closest_source_index, 2)) <= 3)
             caught = 1;
             fprintf(1, 'Found Source!\n');
             sourcelog(s, :) = [x_max, y_max];
