@@ -191,7 +191,7 @@ static vector<pair<int, int>> planner(
     vector<state_t> goals; // vector of possible goals
     printf("Frontier size: %d, line: %d\n", frontier.size(), __LINE__);
 
-    if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
+    if ((robotposeX != sink_x && robotposeY != sink_y) && exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
         // add sink to goals vector
         state_t sink_copy = make_shared<State>(sink_x, sink_y, sink, -1);
         goals.push_back(sink_copy);
