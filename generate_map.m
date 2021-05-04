@@ -6,10 +6,12 @@ end
 
 % randomize source location(s)?
 % make number of sources a parameter?
-sources = [268, 283];
-obs = imread('map1.png');
-obs = rgb2gray(obs);
-obstacles = obs <= 128;
+%sources = [268, 283];
+sources = [100, 35; 150, 140; 25, 100];
+obs = imread('map3.png');
+%obs = rgb2gray(obs);
+obstacles = obs(:, :, 2) <= 128;
+ground_obs = obs(:, :, 1)<=128; %set ground_obs = obstacles for all obstacles to block contam
 
 iter = 20; %steps for contamination spread
 
@@ -21,19 +23,20 @@ if display
     imagesc(obstacles'); axis square; colorbar; colormap jet; hold on;
 end
 
-contam = zeros(size(obstacles));
+contam = zeros([size(obstacles), 3]);
 
 maxTime = 3;
 for i=1:maxTime
-    contam = updatePol(contam,obstacles,sources, iter, i);
+    for j = 1:size(sources, 1)
+        contam(:, :,j)  = updatePol(contam(:, :,j),ground_obs,sources(j, :), iter, i);
+        contam(:, :, j) = contam(:, :, j) / max(max(contam(:, :, j)));
+    end
     if display
         figure(2);
-        imagesc(contam' / max(max(contam)));
+        imagesc(contam(:, :, 1)' / max(max(contam(:, :, 1))));
         pause(0.1);
     end
 end
-
-contam = contam / max(max(contam));
 
 if save_maps
     save('map', 'contam', 'obstacles', 'sources');
@@ -61,5 +64,11 @@ if display
     hold on;
     plot(xfit, yfit);
 end
+
+for j = 2:size(sources, 1)
+    contam(:, :, 1) = contam(:, :, 1) + contam(:, :, j);
+end
+
+contam = contam(:, :, 1);
 
 end
