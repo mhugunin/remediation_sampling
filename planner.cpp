@@ -146,7 +146,7 @@ static vector<pair<int, int>> planner(
 
         // Get frontier from goalMap
     if(firstCall){ // first time calling planner
-        printf("first Call: %d\n", __LINE__);
+        //printf("first Call: %d\n", __LINE__);
         // add surronding nodes of the current robot positions
         for (int dir = 0; dir < NUMOFDIRS; dir++)
             {   
@@ -159,7 +159,7 @@ static vector<pair<int, int>> planner(
             }
     }
     firstCall = 0;
-    printf("call=%d\n", temp);
+    //printf("call=%d\n", temp);
     temp = temp+1;
     
 //     printf("robot: %d %d; ", robotposeX, robotposeY);
@@ -173,8 +173,8 @@ static vector<pair<int, int>> planner(
     double mostLikely = std::numeric_limits<double>::lowest();
     int sink_x = goalposeX;
     int sink_y = goalposeY;
-    printf("Robot: (%d, %d)\n", robotposeX, robotposeY);
-    printf("goal: (%d, %d)\n", sink_x, sink_y);
+    //printf("Robot: (%d, %d)\n", robotposeX, robotposeY);
+    //printf("goal: (%d, %d)\n", sink_x, sink_y);
     // for(int i = 0; i < y_size; ++i){
     //     for(int j = 0; j < x_size; ++j){
     //         if(goalMap[GETMAPINDEX(j+1,i+1, x_size, y_size)] > mostLikely){
@@ -189,7 +189,7 @@ static vector<pair<int, int>> planner(
 
     int nextId = 1;
     vector<state_t> goals; // vector of possible goals
-    printf("Frontier size: %d, line: %d\n", frontier.size(), __LINE__);
+    //printf("Frontier size: %d, line: %d\n", frontier.size(), __LINE__);
 
     if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
         // add sink to goals vector
@@ -207,11 +207,11 @@ static vector<pair<int, int>> planner(
         }
     }
 
-    printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
+    //printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
 
     open.push(sink);
 
-    printf("pre while loop: %d\n", __LINE__);
+    //printf("pre while loop: %d\n", __LINE__);
     
     while(!open.empty()){
         // get current node
@@ -293,7 +293,7 @@ static vector<pair<int, int>> planner(
         }
     }
 
-    printf("Broke out of while loop: %d\n", __LINE__);
+    //printf("Broke out of while loop: %d\n", __LINE__);
     vector<pair<int, int>> default_vec;
     default_vec.push_back(make_pair(-1, -1));
     return default_vec;
@@ -358,7 +358,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     // planner needs to return / set a vector or something for actual plan
     // printf("Path size: %d\n", path.size());
-    printf("Plan len: %d\n", plan_len);
+    //printf("Plan len: %d\n", plan_len);
     
     // set the output to returned plan
     plhs[0] = mxCreateNumericMatrix( (mwSize)plan_len, (mwSize)2, mxINT32_CLASS, mxREAL);
@@ -366,7 +366,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 
     // loop through and assign to action_ptr for each location in plan
     for(int i = 1; i < path.size(); ++i){
-        printf("Path node loc: (%d, %d)\n", path[i].first, path[i].second);
+        //printf("Path node loc: (%d, %d)\n", path[i].first, path[i].second);
         
         action_ptr[GETMAPINDEX(i,1, plan_len, 2)] = path[i].first;
         action_ptr[GETMAPINDEX(i,2, plan_len, 2)] = path[i].second;

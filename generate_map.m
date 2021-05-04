@@ -7,7 +7,7 @@ end
 % randomize source location(s)?
 % make number of sources a parameter?
 %sources = [268, 283];
-sources = [100, 35; 150, 140; 25, 100];
+sources = [105, 35; 50, 100];
 obs = imread('map3.png');
 %obs = rgb2gray(obs);
 obstacles = obs(:, :, 2) <= 128;

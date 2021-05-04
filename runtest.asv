@@ -13,12 +13,12 @@ else
 end
 
 %draw the environment
-%fig = figure('units','normalized','outerposition',[0 0 1 1]);
+fig = figure('units','normalized','outerposition',[0 0 1 1]);
 sp1 = subplot(2,1,1);
-sp1.Position = sp1.Position + [0.075 -0.05 0 0.1];
+%sp1.Position = sp1.Position + [0.075 -0.05 0 0.1];
 imshow(ones(size(envmap')));
 sp2 = subplot(2,1,2);
-sp2.Position = sp2.Position + [0.075 -0.05 0 0.1];
+%sp2.Position = sp2.Position + [-0.075 -0.05 0 0.1];
 imshow(ones(size(envmap')));
 % sp3 = subplot(2,2,3);
 % sp3.Position = sp3.Position + [0.075 -0.05 0 0.1];
@@ -198,6 +198,9 @@ while s <= sourcecount
                 break;
             end
             dis = (sqrt((x-robotpos(1)).^2+(y-robotpos(2)).^2));
+            for (sub_s = 1:s-2)
+                dis = dis.*(sourcerad, sqrt((x-sourcelog(sub_s,1)).^2+(y-sourcelog(sub_s,2).^2)));
+            end
             goalmap = dis;
             goalmap = goalmap / max(max(goalmap));
             %goalmap = ones(size(envmap)) / (size(envmap, 1) * size(envmap, 2));
