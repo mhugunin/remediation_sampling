@@ -253,23 +253,21 @@ static vector<pair<int, int>> planner(
             auto chosenGoal = path[0];
             //printf("%d\n", __LINE__);
             // remove the frontier node
-            if (!exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)]) {
-                //printf("%d\n", __LINE__);
-                frontier.erase(chosenGoal);
-                exploredMap[GETMAPINDEX(chosenGoal.first, chosenGoal.second, x_size, y_size)] = true;
-                for (int dir = 0; dir < NUMOFDIRS; dir++)
-                {   
-                    int newx = chosenGoal.first + dX[dir];
-                    int newy = chosenGoal.second + dY[dir];
+            //printf("%d\n", __LINE__);
+            frontier.erase(chosenGoal);
+            exploredMap[GETMAPINDEX(chosenGoal.first, chosenGoal.second, x_size, y_size)] = true;
+            for (int dir = 0; dir < NUMOFDIRS; dir++)
+            {   
+                int newx = chosenGoal.first + dX[dir];
+                int newy = chosenGoal.second + dY[dir];
 
-                    pair<int, int> prospective = make_pair(newx, newy);
-                    //collision check and then add to frontier vector
-                    if(!willCollide(newx, newy, obstacleMap, x_size, y_size)){
-                        if(!exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] && frontier.find(prospective) == frontier.end()){ // not already in explored map and not already in frontier
-                            frontier.insert(prospective);
-                            // //printf("Inserted into frontier!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                            // //printf("location: (%d, %d)\n", prospective.first, prospective.second);
-                        }
+                pair<int, int> prospective = make_pair(newx, newy);
+                //collision check and then add to frontier vector
+                if(!willCollide(newx, newy, obstacleMap, x_size, y_size)){
+                    if(!exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] && frontier.find(prospective) == frontier.end()){ // not already in explored map and not already in frontier
+                        frontier.insert(prospective);
+                        // //printf("Inserted into frontier!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                        // //printf("location: (%d, %d)\n", prospective.first, prospective.second);
                     }
                 }
             }
