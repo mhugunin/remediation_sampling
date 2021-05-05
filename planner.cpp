@@ -101,7 +101,7 @@ public:
 class Hash{
 public:
     size_t operator()(const state_t &n) const {
-        return std::hash<int>{}(n->id);
+        return (size_t)n->robotposeX << 32 & (size_t)n->robotposeY;
     }
 };
 
@@ -217,11 +217,11 @@ static vector<pair<int, int>> planner(
         // get current node
         state_t current_node = open.top();
         open.pop();
-        // //printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
-        //printf("Current Node loc: (%d, %d)\n", current_node->robotposeX, current_node->robotposeY);
+        printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
+        printf("Current Node loc: (%d, %d)\n", current_node->robotposeX, current_node->robotposeY);
         // add to closed set
         auto iterator = closed.find(current_node);
-        if(iterator != closed.end()){
+        if(iterator != closed.end() && current_node->id != -1){
             continue;
         }
         else {
@@ -322,7 +322,7 @@ static vector<pair<int, int>> planner(
 
             //printf("expanding frontier node!\n");
             state_t sink = make_shared<State>(sink_x, sink_y, current_node, -1);
-            sink->g = current_node->g + euclideanDist(current_node->robotposeX, current_node->robotposeY, sink_x, sink_y);//euclidean distance to the most likely contamination source
+            sink->g = current_node->g + (2 * euclideanDist(current_node->robotposeX, current_node->robotposeY, sink_x, sink_y));//euclidean distance to the most likely contamination source
             sink->h = 0; // euclidean distance from node to robot's current position
             sink->f = sink->g;
             open.push(sink);
@@ -348,6 +348,9 @@ static vector<pair<int, int>> planner(
                             //Euclidean distance
                             if (robot_at_sink && !in_frontier) {
                                 child_shared->h = 0;
+                            }
+                            else if (in_frontier) {
+                                child_shared->h = euclideanDist(newx, newy, sink_x, sink_y);
                             }
                             else {
                                 child_shared->h = euclideanDist(newx, newy, sink_x, sink_y);
