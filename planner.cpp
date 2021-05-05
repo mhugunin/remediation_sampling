@@ -114,7 +114,7 @@ vector<pair<int, int>> getPath(state_t curr, int* planLen){
 
     int length = 0;
     while(c->parent != nullptr) {
-        printf("%d\n", __LINE__);
+        //printf("%d\n", __LINE__);
         pair<int, int> next = make_pair(c->robotposeX, c->robotposeY);
         path.push_back(next);
         length++;
@@ -217,8 +217,8 @@ static vector<pair<int, int>> planner(
         // get current node
         state_t current_node = open.top();
         open.pop();
-        printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
-        printf("Current Node loc: (%d, %d)\n", current_node->robotposeX, current_node->robotposeY);
+        //printf("Current Node ID: %d, line: %d\n", current_node->id, __LINE__);
+        //printf("Current Node loc: (%d, %d)\n", current_node->robotposeX, current_node->robotposeY);
         // add to closed set
         auto iterator = closed.find(current_node);
         if(iterator != closed.end() && current_node->id != -1){
@@ -231,22 +231,22 @@ static vector<pair<int, int>> planner(
         // check if current node = sink
         if (current_node->id == -1) {
 
-            printf("Found sink, about to get path: %d\n", __LINE__);
+            //printf("Found sink, about to get path: %d\n", __LINE__);
             vector<pair<int, int>> path = getPath(current_node, plan_len);
-            printf("%d\n", __LINE__);
+            //printf("%d\n", __LINE__);
 
             
-            printf("Robot loc: %d, %d\n", robotposeX, robotposeY);
-            printf("Sink loc: %d, %d\n", current_node->robotposeX, current_node->robotposeY);
-            printf("Parent's loc: %d, %d\n", current_node->parent->robotposeX, current_node->parent->robotposeY);
+            //printf("Robot loc: %d, %d\n", robotposeX, robotposeY);
+            //printf("Sink loc: %d, %d\n", current_node->robotposeX, current_node->robotposeY);
+            //printf("Parent's loc: %d, %d\n", current_node->parent->robotposeX, current_node->parent->robotposeY);
             
             if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)]) {
-                printf("sink is in the explored region\n");
+                //printf("sink is in the explored region\n");
             }
 
             if (frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
                 // add sink to path
-                printf("%d\n", __LINE__);
+                //printf("%d\n", __LINE__);
                 // check if current_node is within range of parent
                 state_t sink_parent = current_node->parent;
                 if (euclideanDist(current_node->robotposeX, current_node->robotposeY, sink_parent->robotposeX, sink_parent->robotposeY) < 1.5) {
@@ -258,12 +258,12 @@ static vector<pair<int, int>> planner(
             //printf("%d\n", __LINE__);
             //printf("%d\n", path.size());
             if (current_node->parent == nullptr) {
-                printf("REALLY BAD\n");
+                //printf("REALLY BAD\n");
             }
             auto chosenGoal = path[0];
-            printf("%d\n", __LINE__);
+            //printf("%d\n", __LINE__);
             // remove the frontier node
-            printf("%d\n", __LINE__);
+            //printf("%d\n", __LINE__);
             frontier.erase(chosenGoal);
             exploredMap[GETMAPINDEX(chosenGoal.first, chosenGoal.second, x_size, y_size)] = true;
             for (int dir = 0; dir < NUMOFDIRS; dir++)

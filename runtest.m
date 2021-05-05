@@ -195,13 +195,12 @@ while s <= sourcecount
         min_dist_to_source = size(obsmap, 2);
         closest_source_index = 1;
         for j = 1:sourcecount
-            dist_to_source = sqrt((y_max-sources(j,1)).^2+(x_max-sources(j,2).^2));
+            dist_to_source = sqrt((robotpos(2)-sources(j,2)).^2+(robotpos(1)-sources(j,1)).^2);
             if dist_to_source < min_dist_to_source
                 min_dist_to_source = dist_to_source;
                 closest_source_index = j;
             end
         end
-        
         if (~caught(closest_source_index) && abs(robotpos(1) - sources(closest_source_index, 1)) <= 3 && abs(robotpos(2) - sources(closest_source_index, 2)) <= 3)
             caught(closest_source_index) = 1;
             fprintf(1, 'Found Source!\n');
