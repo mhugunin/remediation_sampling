@@ -194,7 +194,7 @@ static vector<pair<int, int>> planner(
     // vector<state_t> goals; // vector of possible goals
     //printf("Frontier size: %d, line: %d\n", frontier.size(), __LINE__);
 
-    bool robot_at_sink = (sink_x == robotposeX && sink_y == robotposeY);
+    bool robot_at_sink = ((sink_x == robotposeX && sink_y == robotposeY) || exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)]);
 
     // add robot pos to open list
     state_t start = make_shared<State>(robotposeX, robotposeY, nullptr, 0);
@@ -234,7 +234,7 @@ static vector<pair<int, int>> planner(
             //printf("Found sink, about to get path: %d\n", __LINE__);
             vector<pair<int, int>> path = getPath(current_node, plan_len);
 
-            if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] == 1 || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
+            if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
                 // add sink to path
                 //printf("%d\n", __LINE__);
                 // check if current_node is within range of parent
@@ -253,7 +253,7 @@ static vector<pair<int, int>> planner(
             auto chosenGoal = path[0];
             //printf("%d\n", __LINE__);
             // remove the frontier node
-            if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] != 1) {
+            if (!exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)]) {
                 //printf("%d\n", __LINE__);
                 frontier.erase(chosenGoal);
                 exploredMap[GETMAPINDEX(chosenGoal.first, chosenGoal.second, x_size, y_size)] = true;
@@ -326,7 +326,7 @@ static vector<pair<int, int>> planner(
                 int newy = current_node->robotposeY + dY[dir];
                // check validity/within range
                 if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size){
-                    if ((exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] == 1) || (frontier.find(make_pair(newx, newy)) != frontier.end())) { //if in explored region or frontier
+                    if (exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] || (frontier.find(make_pair(newx, newy)) != frontier.end())) { //if in explored region or frontier
                         // create new nodes
                         state_t child_shared = make_shared<State>(newx, newy, current_node, nextId);
                         // check if children are in closed list
