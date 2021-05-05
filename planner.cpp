@@ -114,7 +114,7 @@ vector<pair<int, int>> getPath(state_t curr, int* planLen){
 
     int length = 0;
     while(c->parent != nullptr) {
-        ////printf("%d\n", __LINE__);
+        printf("%d\n", __LINE__);
         pair<int, int> next = make_pair(c->robotposeX, c->robotposeY);
         path.push_back(next);
         length++;
@@ -229,14 +229,24 @@ static vector<pair<int, int>> planner(
         }
 
         // check if current node = sink
-        if (current_node->robotposeX == sink_x && current_node->robotposeY == sink_y) {
+        if (current_node->id == -1) {
 
-            //printf("Found sink, about to get path: %d\n", __LINE__);
+            printf("Found sink, about to get path: %d\n", __LINE__);
             vector<pair<int, int>> path = getPath(current_node, plan_len);
+            printf("%d\n", __LINE__);
+
+            
+            printf("Robot loc: %d, %d\n", robotposeX, robotposeY);
+            printf("Sink loc: %d, %d\n", current_node->robotposeX, current_node->robotposeY);
+            printf("Parent's loc: %d, %d\n", current_node->parent->robotposeX, current_node->parent->robotposeY);
+            
+            if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)]) {
+                printf("sink is in the explored region\n");
+            }
 
             if (frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
                 // add sink to path
-                //printf("%d\n", __LINE__);
+                printf("%d\n", __LINE__);
                 // check if current_node is within range of parent
                 state_t sink_parent = current_node->parent;
                 if (euclideanDist(current_node->robotposeX, current_node->robotposeY, sink_parent->robotposeX, sink_parent->robotposeY) < 1.5) {
@@ -248,12 +258,12 @@ static vector<pair<int, int>> planner(
             //printf("%d\n", __LINE__);
             //printf("%d\n", path.size());
             if (current_node->parent == nullptr) {
-                //printf("REALLY BAD\n");
+                printf("REALLY BAD\n");
             }
             auto chosenGoal = path[0];
-            //printf("%d\n", __LINE__);
+            printf("%d\n", __LINE__);
             // remove the frontier node
-            //printf("%d\n", __LINE__);
+            printf("%d\n", __LINE__);
             frontier.erase(chosenGoal);
             exploredMap[GETMAPINDEX(chosenGoal.first, chosenGoal.second, x_size, y_size)] = true;
             for (int dir = 0; dir < NUMOFDIRS; dir++)
@@ -278,7 +288,7 @@ static vector<pair<int, int>> planner(
             // current node is on the frontier
             // //printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
 
-            if (robot_at_sink) {
+            // if (robot_at_sink) {
 
                 /*
                 //printf("Found frontier, about to get path: %d\n", __LINE__);
@@ -308,16 +318,15 @@ static vector<pair<int, int>> planner(
                 }
                 return path;
                 */
-                continue;
-            }
+            // }
 
             //printf("expanding frontier node!\n");
-            state_t sink = make_shared<State>(sink_x, sink_y, current_node, nextId);
+            state_t sink = make_shared<State>(sink_x, sink_y, current_node, -1);
             sink->g = current_node->g + euclideanDist(current_node->robotposeX, current_node->robotposeY, sink_x, sink_y);//euclidean distance to the most likely contamination source
             sink->h = 0; // euclidean distance from node to robot's current position
             sink->f = sink->g;
             open.push(sink);
-            nextId++;
+            // nextId++;
         } else {
 
             // for every direction, generate children
