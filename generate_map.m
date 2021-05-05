@@ -1,4 +1,4 @@
-function [contam, obstacles, sources] = generate_map(display, save_maps)
+function [contam, obstacles, sources] = generate_map(display, save_maps, name, sources)
 
 if display
     close all;
@@ -7,8 +7,7 @@ end
 % randomize source location(s)?
 % make number of sources a parameter?
 %sources = [268, 283];
-sources = [105, 35; 50, 100];
-obs = imread('map3.png');
+obs = imread(name); %maps 3-5
 %obs = rgb2gray(obs);
 obstacles = obs(:, :, 2) <= 128;
 ground_obs = obs(:, :, 1)<=128; %set ground_obs = obstacles for all obstacles to block contam
