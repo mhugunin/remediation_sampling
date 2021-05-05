@@ -229,12 +229,12 @@ static vector<pair<int, int>> planner(
         }
 
         // check if current node = sink
-        if (!robot_at_sink && current_node->robotposeX == sink_x && current_node->robotposeY == sink_y) {
+        if (current_node->robotposeX == sink_x && current_node->robotposeY == sink_y) {
 
             //printf("Found sink, about to get path: %d\n", __LINE__);
             vector<pair<int, int>> path = getPath(current_node, plan_len);
 
-            if (exploredMap[GETMAPINDEX(sink_x, sink_y, x_size, y_size)] || frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
+            if (frontier.find(make_pair(sink_x, sink_y)) != frontier.end()) {
                 // add sink to path
                 //printf("%d\n", __LINE__);
                 // check if current_node is within range of parent
@@ -281,7 +281,8 @@ static vector<pair<int, int>> planner(
             // //printf("Goals size: %d, line: %d\n", goals.size(), __LINE__);
 
             if (robot_at_sink) {
-                // return a path
+
+                /*
                 //printf("Found frontier, about to get path: %d\n", __LINE__);
                 vector<pair<int, int>> path = getPath(current_node, plan_len);
                 // append frontier node
@@ -308,6 +309,8 @@ static vector<pair<int, int>> planner(
                     }
                 }
                 return path;
+                */
+                continue;
             }
 
             //printf("expanding frontier node!\n");
@@ -326,7 +329,8 @@ static vector<pair<int, int>> planner(
                 int newy = current_node->robotposeY + dY[dir];
                // check validity/within range
                 if (newx >= 1 && newx <= x_size && newy >= 1 && newy <= y_size){
-                    if (exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] || (frontier.find(make_pair(newx, newy)) != frontier.end())) { //if in explored region or frontier
+                    bool in_frontier = (frontier.find(make_pair(newx, newy)) != frontier.end());
+                    if (exploredMap[GETMAPINDEX(newx, newy, x_size, y_size)] || in_frontier) { //if in explored region or frontier
                         // create new nodes
                         state_t child_shared = make_shared<State>(newx, newy, current_node, nextId);
                         // check if children are in closed list
@@ -335,7 +339,7 @@ static vector<pair<int, int>> planner(
                              // else: set g,h,f
                             child_shared->g = (current_node -> g) + hypot((float)dX[dir],(float)dY[dir]);
                             //Euclidean distance
-                            if (robot_at_sink) {
+                            if (robot_at_sink && !in_frontier) {
                                 child_shared->h = 0;
                             }
                             else {
