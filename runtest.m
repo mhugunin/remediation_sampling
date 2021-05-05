@@ -1,15 +1,16 @@
-function[numofmoves, caught] = runtest(robotstart, mapfile)
+function[numofmoves, caught] = runtest(robotstart, mapname, sources)
 
 close all;
 
-if exist('mapfile', 'var')
-    map_struct = load(mapfile);
-    envmap = map_struct.contam;
-    obsmap = map_struct.obstacles;
-    sources = map_struct.sources;
+if exist('mapname', 'var')
+    %map_struct = load(mapfile);
+    %envmap = map_struct.contam;
+    %obsmap = map_struct.obstacles;
+    %sources = map_struct.sources;
+    [envmap, obsmap, sources] = generate_map(0, 0, mapname, sources);
 else
     %TODO: should we specify target location?
-    [envmap, obsmap, sources] = generate_map(0, 0);
+    [envmap, obsmap, sources] = generate_map(0, 0, "map3.png", [105, 35; 50, 100]);
 end
 
 %draw the environment
@@ -50,7 +51,7 @@ hr = -1;
 goal_guess_plot = -1;
 goal_guess_plot2 = -1;
 numofmoves = 0;
-caught = 0;
+
 %c0 = clock();
 
 %meshgrid for distance calcs
@@ -59,21 +60,21 @@ caught = 0;
 display_n = 5; %render every nth iteration
 
 sourcecount = 2;
+caught = zeros(1, sourcecount);
 sourcelog = zeros(sourcecount, 2);
-sourcerad = 40;
+sourcerad = 80;
 s = 1;
 
 while s <= sourcecount
     for i = 1:1000
-        tic();
         %draw the positions
         
         [maxval, n] = max(goalmap(:));
-        [x_max, y_max] = ind2sub(size(goalmap), n);
-%         ids = find(goalmap(:)==maxval);
-%         [x_max_arr, y_max_arr] = ind2sub(size(goalmap), ids);
-%         x_max = sum(x_max_arr)/length(x_max_arr);
-%         y_max = sum(y_max_arr)/length(y_max_arr);
+        %[x_max, y_max] = ind2sub(size(goalmap), n);
+        ids = find(goalmap(:)==maxval);
+        [x_max_arr, y_max_arr] = ind2sub(size(goalmap), ids);
+        x_max = ceil(sum(x_max_arr)/length(x_max_arr))
+        y_max = ceil(sum(y_max_arr)/length(y_max_arr))
 
         if(mod(i, display_n)==0)
             figure(1);
@@ -201,23 +202,22 @@ while s <= sourcecount
             end
         end
         
-        if (abs(robotpos(1) - sources(closest_source_index, 1)) <= 3 && abs(robotpos(2) - sources(closest_source_index, 2)) <= 3)
-            caught = 1;
+        if (~caught(closest_source_index) && abs(robotpos(1) - sources(closest_source_index, 1)) <= 3 && abs(robotpos(2) - sources(closest_source_index, 2)) <= 3)
+            caught(closest_source_index) = 1;
             fprintf(1, 'Found Source!\n');
             sourcelog(s, :) = [x_max, y_max];
             s = s + 1;
             if(s > sourcecount)
                 break;
             end
-            dis = (sqrt((x-robotpos(1)).^2+(y-robotpos(2)).^2));
-            goalmap = dis;
+            goalmap = min(1, (sqrt((x-robotpos(1)).^2+(y-robotpos(2)).^2))/sourcerad);
             goalmap = goalmap / max(max(goalmap));
+            imshow(goalmap);
             %goalmap = ones(size(envmap)) / (size(envmap, 1) * size(envmap, 2));
         end
-        toc()
     end
 end
 
-fprintf(1, 'Robot stopped=%d, number of moves made=%d\n', caught, numofmoves);
+fprintf(1, 'Robot stopped=%d, number of moves made=%d\n', caught(1), numofmoves);
 %c = clock();
 %fprintf(1, 'duration=%d\n', (c(5) - c0(5)) * 60 + c(6) - c0(6));
